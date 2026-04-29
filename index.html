@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Regional Clinical Engineering Equipment Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #eef2f7;
+    --surface: #ffffff;
+    --surface2: #f4f7fb;
+    --border: #d9e2ef;
+    --primary: #1b4f72;
+    --primary-light: #2471a3;
+    --primary-faint: #d6eaf8;
+    --accent: #117a65;
+    --accent-light: #1abc9c;
+    --accent-faint: #d0ece7;
+    --amber: #b7770d;
+    --amber-bg: #fef9e7;
+    --red: #c0392b;
+    --red-bg: #fdf0ef;
+    --text: #1a202c;
+    --text2: #4a5568;
+    --text3: #718096;
+    --radius: 12px;
+    --shadow: 0 2px 14px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.13);
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    background: linear-gradient(135deg, #1b4f72 0%, #117a65 100%);
+    color: white;
+    padding: 1.1rem 1.5rem;
+    box-shadow: 0 4px 20px rgba(27,79,114,0.35);
+  }
+  .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 1rem; }
+  .header-logo { font-size: 2.1rem; }
+  .header-title { font-size: clamp(0.95rem, 3vw, 1.3rem); font-weight: 800; letter-spacing: -0.2px; line-height: 1.25; }
+  .header-sub { font-size: 0.75rem; opacity: 0.78; margin-top: 3px; }
+
+  /* ── TAB NAV ── */
+  .tab-nav { background: var(--primary); border-bottom: 3px solid var(--accent-light); position: sticky; top: 0; z-index: 100; }
+  .tab-nav-inner { max-width: 960px; margin: 0 auto; display: flex; overflow-x: auto; scrollbar-width: none; }
+  .tab-nav-inner::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 0.8rem 1.15rem; border: none; background: none;
+    color: rgba(255,255,255,0.6); cursor: pointer;
+    font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 600;
+    display: flex; align-items: center; gap: 6px; white-space: nowrap;
+    border-bottom: 3px solid transparent; margin-bottom: -3px;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+  .tab-btn.active { color: white; border-bottom-color: var(--accent-light); background: rgba(255,255,255,0.1); }
+
+  /* ── BODY / PANELS ── */
+  .app-body { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .panel { display: none; animation: fadeIn 0.28s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+
+  /* ── SECTION HEADER ── */
+  .section-header { display: flex; align-items: flex-start; gap: 0.9rem; margin-bottom: 1.1rem; }
+  .section-icon { width: 46px; height: 46px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+  .icon-fault { background: #fdebd0; }
+  .icon-install { background: var(--primary-faint); }
+  .icon-equip { background: var(--accent-faint); }
+  .icon-admin { background: #ebe8fd; }
+  .section-title { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+  .section-sub { font-size: 0.8rem; color: var(--text2); margin-top: 3px; }
+
+  /* ── BANNER ── */
+  .banner {
+    padding: 0.8rem 1rem; border-radius: 0 8px 8px 0;
+    font-size: 0.82rem; margin-bottom: 1.1rem;
+    border-left: 4px solid;
+  }
+  .banner-blue { background: var(--primary-faint); border-color: var(--primary-light); color: var(--primary); }
+  .banner-green { background: var(--accent-faint); border-color: var(--accent); color: #0e6655; }
+
+  /* ── FORM CARD ── */
+  .form-card { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 0.8rem; font-weight: 700; color: var(--text2); }
+  .field-hint { font-size: 0.73rem; color: var(--text3); }
+  .req { color: var(--red); }
+
+  input, select, textarea {
+    border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 0.58rem 0.82rem; font-size: 0.87rem;
+    font-family: 'Outfit', sans-serif; background: var(--surface2);
+    color: var(--text); width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px var(--primary-faint);
+  }
+  input.err, select.err, textarea.err { border-color: var(--red); }
+  textarea { resize: vertical; min-height: 100px; }
+  .err-msg { font-size: 0.73rem; color: var(--red); }
+
+  /* ── FILE UPLOAD ── */
+  .file-area { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; margin-top: 0.25rem; }
+  .file-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--primary-faint); color: var(--primary);
+    border: 1.5px dashed var(--primary-light); border-radius: 8px;
+    padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .file-label:hover { background: #bed8f0; }
+  #img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); display: none; }
+
+  /* ── FORM FOOTER ── */
+  .form-footer { display: flex; justify-content: flex-end; margin-top: 1.25rem; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white; border: none; border-radius: 10px; padding: 0.72rem 1.9rem;
+    font-size: 0.88rem; font-weight: 700; font-family: 'Outfit', sans-serif;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(27,79,114,0.3);
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(27,79,114,0.4); }
+  .btn-primary.green { background: linear-gradient(135deg, #0e6655 0%, var(--accent) 100%); box-shadow: 0 4px 12px rgba(17,122,101,0.3); }
+  .btn-primary.green:hover { box-shadow: 0 6px 16px rgba(17,122,101,0.4); }
+  .btn-outline {
+    background: transparent; border: 2px solid var(--primary); color: var(--primary);
+    border-radius: 8px; padding: 0.55rem 1.1rem; font-size: 0.82rem; font-weight: 700;
+    font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-outline:hover { background: var(--primary-faint); }
+  .btn-sm { padding: 0.38rem 0.8rem; font-size: 0.75rem; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.52);
+    align-items: center; justify-content: center; z-index: 999; padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-card {
+    background: white; border-radius: 16px; padding: 2rem;
+    max-width: 400px; width: 100%; box-shadow: var(--shadow-lg);
+    text-align: center; animation: slideUp 0.28s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(18px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-icon { font-size: 2.8rem; margin-bottom: 0.4rem; }
+  .modal-title { font-size: 1.25rem; font-weight: 800; color: var(--accent); margin-bottom: 0.4rem; }
+  .modal-body { font-size: 0.83rem; color: var(--text2); margin-bottom: 1rem; }
+  .modal-ref { background: var(--surface2); border-radius: 8px; padding: 0.7rem; margin-bottom: 1rem; }
+  .ref-label { display: block; font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+  .ref-code { display: block; font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-top: 2px; }
+  .modal-q { font-size: 0.86rem; font-weight: 600; margin-bottom: 0.85rem; }
+  .modal-btns { display: flex; gap: 0.7rem; justify-content: center; flex-wrap: wrap; }
+
+  /* ── ADMIN LOGIN ── */
+  .login-wrap { display: flex; justify-content: center; padding: 2rem 0; }
+  .login-card { background: var(--surface); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 350px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); text-align: center; }
+  .login-icon { font-size: 2.8rem; margin-bottom: 0.4rem; }
+  .login-title { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
+  .login-sub { font-size: 0.75rem; color: var(--text3); margin-bottom: 1.2rem; }
+  .login-card input { text-align: center; letter-spacing: 0.15em; }
+
+  /* ── ADMIN PANEL ── */
+  .admin-panel { display: none; }
+  .admin-panel.open { display: block; }
+
+  .admin-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .atab-btn {
+    padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid var(--border);
+    background: var(--surface); font-family: 'Outfit', sans-serif; font-size: 0.8rem;
+    font-weight: 600; cursor: pointer; color: var(--text2); transition: all 0.18s;
+  }
+  .atab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  /* ── DISTRICT MANAGER ── */
+  .district-manager { background: var(--surface); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 1.25rem; }
+  .dm-title { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 0.85rem; }
+  .dm-list { list-style: none; margin-bottom: 1rem; max-height: 240px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .dm-list li { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.85rem; font-size: 0.83rem; border-bottom: 1px solid var(--border); }
+  .dm-list li:last-child { border-bottom: none; }
+  .dm-list li:nth-child(even) { background: var(--surface2); }
+  .dm-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; padding: 0 4px; line-height: 1; }
+  .dm-add-row { display: flex; gap: 0.6rem; }
+  .dm-add-row input { flex: 1; }
+
+  /* ── STATUS TRACKER (admin only) ── */
+  .report-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.1rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+  .report-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 0.5rem; }
+  .report-ref { font-family: 'Space Mono', monospace; font-size: 0.75rem; background: var(--primary-faint); color: var(--primary); padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+  .report-time { font-size: 0.7rem; color: var(--text3); }
+  .report-name { font-weight: 700; font-size: 0.88rem; margin-bottom: 3px; }
+  .report-detail { font-size: 0.78rem; color: var(--text2); margin-bottom: 2px; }
+  .report-contact { font-size: 0.74rem; color: var(--text3); }
+  .report-img { width: 100%; max-width: 180px; border-radius: 8px; margin-top: 8px; border: 1px solid var(--border); display: none; }
+
+  /* Status stepper */
+  .status-stepper { margin-top: 1rem; }
+  .stepper-label { font-size: 0.75rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.6rem; }
+  .stepper-steps { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .step-pill {
+    display: flex; align-items: center; gap: 5px;
+    padding: 0.38rem 0.75rem; border-radius: 999px;
+    border: 2px solid var(--border); background: var(--surface2);
+    font-size: 0.75rem; font-weight: 600; cursor: pointer; color: var(--text3);
+    transition: all 0.18s;
+  }
+  .step-pill:hover { border-color: var(--primary-light); color: var(--primary-light); }
+  .step-pill.active { background: var(--primary); border-color: var(--primary); color: white; }
+  .step-pill.done { background: var(--accent-faint); border-color: var(--accent); color: var(--accent); }
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  /* ── STATS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.7rem; margin-bottom: 1.25rem; }
+  .stat-card { border-radius: 10px; padding: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 3px; box-shadow: var(--shadow); }
+  .stat-num { font-size: 1.75rem; font-weight: 800; line-height: 1; }
+  .stat-lbl { font-size: 0.69rem; color: var(--text2); font-weight: 600; text-align: center; }
+  .s-blue { background: var(--primary-faint); } .s-blue .stat-num { color: var(--primary); }
+  .s-green { background: #d5f5e3; } .s-green .stat-num { color: #1e8449; }
+  .s-amber { background: var(--amber-bg); } .s-amber .stat-num { color: var(--amber); }
+  .s-teal { background: var(--accent-faint); } .s-teal .stat-num { color: var(--accent); }
+  .s-red { background: var(--red-bg); } .s-red .stat-num { color: var(--red); }
+
+  .empty-state { text-align: center; padding: 3rem; color: var(--text3); font-size: 0.88rem; }
+
+  /* ── FOOTER ── */
+  .app-footer { text-align: center; padding: 1.25rem 1rem; font-size: 0.7rem; color: var(--text3); border-top: 1px solid var(--border); margin-top: 1rem; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .form-footer { justify-content: stretch; }
+    .btn-primary { width: 100%; }
+    .stepper-steps { gap: 0.28rem; }
+    .step-pill { font-size: 0.68rem; padding: 0.3rem 0.55rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════ HEADER ════════════ -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-logo">🏥</div>
+    <div>
+      <div class="header-title">Regional Clinical Engineering Equipment Management</div>
+      <div class="header-sub">Clinical Engineering Unit — Western Region Health Directorate, Ghana</div>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════ TAB NAV ════════════ -->
+<nav class="tab-nav">
+  <div class="tab-nav-inner">
+    <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Reporting</button>
+    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation Request</button>
+    <button class="tab-btn" onclick="showTab('equip',this)">🏥 Equipment Request</button>
+    <button class="tab-btn" onclick="showTab('admin',this)">🔐 Admin</button>
+  </div>
+</nav>
+
+<!-- ════════════ BODY ════════════ -->
+<div class="app-body">
+
+  <!-- ══ TAB 1: FAULT REPORTING ══ -->
+  <div id="panel-fault" class="panel active">
+    <div class="section-header">
+      <div class="section-icon icon-fault">⚠️</div>
+      <div>
+        <div class="section-title">Medical Equipment Fault Reporting</div>
+        <div class="section-sub">Report equipment faults for assessment by the Clinical Engineering Unit</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Name of Facility <span class="req">*</span></label>
+          <input type="text" id="f-facility" placeholder="e.g. Effia Nkwanta Regional Hospital, Takoradi"/>
+          <span class="err-msg" id="err-f-facility"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">District <span class="req">*</span></label>
+          <select id="f-district">
+            <option value="">-- Select District --</option>
+          </select>
+          <span class="err-msg" id="err-f-district"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Type of Facility <span class="req">*</span></label>
+          <select id="f-ftype">
+            <option value="">-- Select Facility Type --</option>
+            <option>Teaching Hospital</option><option>Regional Hospital</option>
+            <option>District Hospital</option><option>Polyclinic</option>
+            <option>Health Centre</option><option>CHPS Compound</option>
+            <option>Private Hospital</option><option>Mission/Faith-Based Hospital</option>
+            <option>Maternity Home</option><option>Clinic</option>
+          </select>
+          <span class="err-msg" id="err-f-ftype"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Unit / Department</label>
+          <input type="text" id="f-unit" placeholder="e.g. ICU, Theatre, Maternity Ward"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Name of Equipment <span class="req">*</span></label>
+          <input type="text" id="f-equip" placeholder="e.g. Portable Ventilator, ECG Machine"/>
+          <span class="err-msg" id="err-f-equip"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Name of Person Reporting <span class="req">*</span></label>
+          <input type="text" id="f-reporter" placeholder="Full name"/>
+          <span class="err-msg" id="err-f-reporter"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Contact Number <span class="req">*</span></label>
+          <p class="field-hint">We may contact you for further clarification</p>
+          <input type="tel" id="f-contact" placeholder="e.g. 0244000000"/>
+          <span class="err-msg" id="err-f-contact"></span>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom:1rem;">
+        <label class="field-label">Description of Fault <span class="req">*</span></label>
+        <textarea id="f-desc" rows="4" placeholder="Describe the fault — when it started, observed symptoms, error messages, etc."></textarea>
+        <span class="err-msg" id="err-f-desc"></span>
+      </div>
+
+      <div class="field-group" style="margin-bottom:1rem;">
+        <label class="field-label">Other Remarks</label>
+        <textarea id="f-remarks" rows="3" placeholder="Any additional information you think is relevant"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Upload Picture of Equipment</label>
+        <p class="field-hint">Attach a clear photo showing the fault or equipment label</p>
+        <div class="file-area">
+          <label class="file-label" for="f-img">📷 Choose Image</label>
+          <input type="file" id="f-img" accept="image/*" style="display:none" onchange="previewImg(this,'img-preview')"/>
+          <img id="img-preview" alt="Preview"/>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button class="btn-primary" onclick="submitFault()">📤 Submit Fault Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 2: INSTALLATION REQUEST ══ -->
+  <div id="panel-install" class="panel">
+    <div class="section-header">
+      <div class="section-icon icon-install">🔩</div>
+      <div>
+        <div class="section-title">Request for Equipment Installation</div>
+        <div class="section-sub">Submit a request when your facility has received new equipment and requires installation support</div>
+      </div>
+    </div>
+
+    <div class="banner banner-blue">
+      💡 <strong>Note:</strong> This form is for newly received equipment that requires professional installation or commissioning by the Clinical Engineering Unit.
+    </div>
+
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Name of Facility <span class="req">*</span></label>
+          <input type="text" id="i-facility" placeholder="e.g. Axim Government Hospital"/>
+          <span class="err-msg" id="err-i-facility"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">District <span class="req">*</span></label>
+          <select id="i-district">
+            <option value="">-- Select District --</option>
+          </select>
+          <span class="err-msg" id="err-i-district"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Type of Facility <span class="req">*</span></label>
+          <select id="i-ftype">
+            <option value="">-- Select Facility Type --</option>
+            <option>Teaching Hospital</option><option>Regional Hospital</option>
+            <option>District Hospital</option><option>Polyclinic</option>
+            <option>Health Centre</option><option>CHPS Compound</option>
+            <option>Private Hospital</option><option>Mission/Faith-Based Hospital</option>
+            <option>Maternity Home</option><option>Clinic</option>
+          </select>
+          <span class="err-msg" id="err-i-ftype"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Type of Equipment <span class="req">*</span></label>
+          <select id="i-etype">
+            <option value="">-- Select Equipment Type --</option>
+            <option>Diagnostic Imaging</option><option>Patient Monitoring</option>
+            <option>Laboratory Equipment</option><option>Surgical Equipment</option>
+            <option>Anaesthesia Equipment</option><option>Sterilization Equipment</option>
+            <option>Physiotherapy Equipment</option><option>Dental Equipment</option>
+            <option>Ophthalmic Equipment</option><option>Emergency Equipment</option>
+            <option>ICU Equipment</option><option>Neonatal Equipment</option>
+            <option>Dialysis Equipment</option><option>Endoscopy Equipment</option>
+            <option>Radiation Therapy</option><option>Other</option>
+          </select>
+          <span class="err-msg" id="err-i-etype"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Quantity <span class="req">*</span></label>
+          <select id="i-qty">
+            <option value="">-- Select Quantity --</option>
+          </select>
+          <span class="err-msg" id="err-i-qty"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Preferred Date for Installation</label>
+          <input type="date" id="i-date"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Name of Person Requesting <span class="req">*</span></label>
+          <input type="text" id="i-name" placeholder="Full name"/>
+          <span class="err-msg" id="err-i-name"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Grade / Position</label>
+          <input type="text" id="i-grade" placeholder="e.g. Biomedical Engineer, Nurse Manager"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Contact Number <span class="req">*</span></label>
+          <input type="tel" id="i-contact" placeholder="e.g. 0244000000"/>
+          <span class="err-msg" id="err-i-contact"></span>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="btn-primary" onclick="submitInstall()">📤 Submit Installation Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 3: EQUIPMENT REQUEST ══ -->
+  <div id="panel-equip" class="panel">
+    <div class="section-header">
+      <div class="section-icon icon-equip">🏥</div>
+      <div>
+        <div class="section-title">Medical Equipment Request</div>
+        <div class="section-sub">Request medical equipment your facility requires to improve patient care</div>
+      </div>
+    </div>
+
+    <div class="banner banner-green">
+      ⚖️ <strong>Equity Notice:</strong> Information provided through this form will be used to assess and guide equitable distribution of medical equipment across all facilities in the region. Please be as accurate as possible.
+    </div>
+
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Name of Facility <span class="req">*</span></label>
+          <input type="text" id="e-facility" placeholder="e.g. Prestea Government Hospital"/>
+          <span class="err-msg" id="err-e-facility"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">District <span class="req">*</span></label>
+          <select id="e-district">
+            <option value="">-- Select District --</option>
+          </select>
+          <span class="err-msg" id="err-e-district"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Type of Equipment <span class="req">*</span></label>
+          <select id="e-etype">
+            <option value="">-- Select Equipment Type --</option>
+            <option>Diagnostic Imaging</option><option>Patient Monitoring</option>
+            <option>Laboratory Equipment</option><option>Surgical Equipment</option>
+            <option>Anaesthesia Equipment</option><option>Sterilization Equipment</option>
+            <option>Physiotherapy Equipment</option><option>Dental Equipment</option>
+            <option>Ophthalmic Equipment</option><option>Emergency Equipment</option>
+            <option>ICU Equipment</option><option>Neonatal Equipment</option>
+            <option>Dialysis Equipment</option><option>Endoscopy Equipment</option>
+            <option>Radiation Therapy</option><option>Other</option>
+          </select>
+          <span class="err-msg" id="err-e-etype"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Quantity Needed <span class="req">*</span></label>
+          <select id="e-qty">
+            <option value="">-- Select Quantity --</option>
+          </select>
+          <span class="err-msg" id="err-e-qty"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Your Name <span class="req">*</span></label>
+          <input type="text" id="e-name" placeholder="Full name"/>
+          <span class="err-msg" id="err-e-name"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Grade / Position</label>
+          <input type="text" id="e-grade" placeholder="e.g. Facility Manager, Biomedical Technician"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Your Contact Number <span class="req">*</span></label>
+          <input type="tel" id="e-contact" placeholder="e.g. 0244000000"/>
+          <span class="err-msg" id="err-e-contact"></span>
+        </div>
+      </div>
+      <div class="field-group" style="margin-bottom:1rem;">
+        <label class="field-label">Reasons for the Request <span class="req">*</span></label>
+        <p class="field-hint">Explain why your facility needs this equipment and how it will improve patient outcomes</p>
+        <textarea id="e-reason" rows="5" placeholder="Provide detailed justification — patient volume, current gaps, clinical need, etc."></textarea>
+        <span class="err-msg" id="err-e-reason"></span>
+      </div>
+      <div class="form-footer">
+        <button class="btn-primary green" onclick="submitEquip()">📤 Submit Equipment Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 4: ADMIN ══ -->
+  <div id="panel-admin" class="panel">
+
+    <!-- Login screen -->
+    <div id="admin-login">
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="login-icon">🔐</div>
+          <div class="login-title">Admin Access</div>
+          <div class="login-sub">Clinical Engineering Unit — Restricted Area</div>
+          <input type="password" id="admin-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()"/>
+          <span class="err-msg" id="login-err" style="display:block;margin-top:6px;"></span>
+          <button class="btn-primary" style="margin-top:1rem;width:100%;" onclick="doLogin()">🔓 Login</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin dashboard (hidden until login) -->
+    <div id="admin-dashboard" class="admin-panel">
+
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.1rem;flex-wrap:wrap;gap:0.5rem;">
+        <div>
+          <div class="section-title" style="display:flex;align-items:center;gap:6px;">🔐 Admin Dashboard</div>
+          <div class="section-sub">Clinical Engineering Unit — Western Region</div>
+        </div>
+        <button class="btn-outline btn-sm" onclick="doLogout()">Logout</button>
+      </div>
+
+      <!-- Admin Sub-tabs -->
+      <div class="admin-tabs">
+        <button class="atab-btn active" onclick="showAdminTab('atab-reports',this)">📋 Fault Reports</button>
+        <button class="atab-btn" onclick="showAdminTab('atab-installs',this)">🔩 Installations</button>
+        <button class="atab-btn" onclick="showAdminTab('atab-equips',this)">🏥 Equipment Requests</button>
+        <button class="atab-btn" onclick="showAdminTab('atab-districts',this)">📍 Manage Districts</button>
+      </div>
+
+      <!-- ── Fault Reports Admin View ── -->
+      <div id="atab-reports" class="atab-panel">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div id="fault-reports-list"><div class="empty-state">📭 No fault reports yet.</div></div>
+      </div>
+
+      <!-- ── Installation Requests Admin View ── -->
+      <div id="atab-installs" class="atab-panel" style="display:none;">
+        <div id="install-list"><div class="empty-state">📭 No installation requests yet.</div></div>
+      </div>
+
+      <!-- ── Equipment Requests Admin View ── -->
+      <div id="atab-equips" class="atab-panel" style="display:none;">
+        <div id="equip-list"><div class="empty-state">📭 No equipment requests yet.</div></div>
+      </div>
+
+      <!-- ── District Manager ── -->
+      <div id="atab-districts" class="atab-panel" style="display:none;">
+        <div class="district-manager">
+          <div class="dm-title">📍 Manage District Dropdown List</div>
+          <p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.75rem;">Add or remove districts. Changes take effect immediately across all form dropdowns.</p>
+          <ul class="dm-list" id="district-list-ui"></ul>
+          <div class="dm-add-row">
+            <input type="text" id="new-district-input" placeholder="Type new district name…" onkeydown="if(event.key==='Enter')addDistrict()"/>
+            <button class="btn-primary" onclick="addDistrict()" style="white-space:nowrap;padding:0.58rem 1rem;">+ Add</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /admin-dashboard -->
+  </div><!-- /panel-admin -->
+
+</div><!-- /app-body -->
+
+<footer class="app-footer">
+  © <span id="yr"></span> Clinical Engineering Unit — Western Region Health Directorate &nbsp;|&nbsp; All submissions are confidential
+</footer>
+
+<!-- ════════════ SUCCESS MODAL ════════════ -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal-card">
+    <div class="modal-icon">✅</div>
+    <div class="modal-title">Submission Successful!</div>
+    <div class="modal-body" id="modal-body-text">Your form has been submitted to the Clinical Engineering Unit.</div>
+    <div class="modal-ref">
+      <span class="ref-label">Reference Code</span>
+      <span class="ref-code" id="modal-ref-code">—</span>
+    </div>
+    <div class="modal-q">Would you like to submit another form?</div>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="modalAnother()">Yes, Submit Another</button>
+      <button class="btn-outline" onclick="closeModal()">No, I'm Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ JAVASCRIPT ════════════ -->
+<script>
+// ─────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxiQYAF0UbrY9Im-_kTqPjS-dK7pb19Ya0zXs-K9vw09iyYEQTvvKDnYqGx3d0OVN5O/exec"; // ← Replace
+
+const FACILITY_PLACEHOLDERS = [
+  "e.g. Effia Nkwanta Regional Hospital, Takoradi",
+  "e.g. Axim Government Hospital",
+  "e.g. Prestea Government Hospital",
+  "e.g. Tarkwa Municipal Hospital",
+  "e.g. Sekondi Polyclinic",
+  "e.g. Shama District Hospital",
+  "e.g. Eikwe Government Hospital",
+  "e.g. Asankragua Government Hospital",
+  "e.g. Half Assini Government Hospital",
+  "e.g. Enchi Government Hospital"
+];
+
+const STATUS_STEPS = [
+  { key: "received",         label: "Received",        icon: "📥" },
+  { key: "pending",          label: "Pending",          icon: "⏳" },
+  { key: "under_repair",     label: "Under Repair",     icon: "🔧" },
+  { key: "repair_completed", label: "Repair Completed", icon: "✅" },
+  { key: "dispatched",       label: "Dispatched",       icon: "🚚" },
+  { key: "obsolete",         label: "Obsolete",         icon: "⛔" },
+];
+
+// ─────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────
+let districts = [
+  "Sekondi-Takoradi Metro","Ahanta West","Shama","Wassa East",
+  "Wassa Amenfi East","Wassa Amenfi West","Wassa Amenfi Central",
+  "Amenfi East","Mpohor","Tarkwa-Nsuaem","Prestea-Huni Valley",
+  "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East",
+  "Bia East","Bia West","Bodi","Aowin","Sefwi Wiawso",
+  "Sefwi Akontombra","Bibiani-Anhwiaso-Bekwai"
+];
+
+let faultReports   = [];
+let installReports = [];
+equipReports       = [];
+let currentTab     = "fault";
+let pendingReset   = null;
+
+// ─────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────
+document.getElementById("yr").textContent = new Date().getFullYear();
+document.getElementById("i-date").min = new Date().toISOString().split("T")[0];
+
+// Populate quantity selects
+["i-qty","e-qty"].forEach(id => {
+  const sel = document.getElementById(id);
+  for (let i = 1; i <= 50; i++) {
+    const opt = document.createElement("option");
+    opt.value = opt.textContent = i;
+    sel.appendChild(opt);
+  }
+});
+
+// Initial district population
+populateAllDistricts();
+renderDistrictManagerUI();
+
+// ─────────────────────────────────────────────────
+// TAB SWITCHING
+// ─────────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("panel-" + name).classList.add("active");
+  btn.classList.add("active");
+  currentTab = name;
+}
+
+function showAdminTab(id, btn) {
+  document.querySelectorAll(".atab-panel").forEach(p => p.style.display = "none");
+  document.querySelectorAll(".atab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).style.display = "block";
+  btn.classList.add("active");
+  if (id === "atab-districts") renderDistrictManagerUI();
+}
+
+// ─────────────────────────────────────────────────
+// ADMIN AUTH
+// ─────────────────────────────────────────────────
+function doLogin() {
+  const pw = document.getElementById("admin-pw").value;
+  if (pw === "CEUWRHD") {
+    document.getElementById("admin-login").style.display = "none";
+    document.getElementById("admin-dashboard").classList.add("open");
+    renderStats();
+    renderFaultList();
+    renderInstallList();
+    renderEquipList();
+  } else {
+    document.getElementById("login-err").textContent = "Incorrect password. Please try again.";
+  }
+}
+function doLogout() {
+  document.getElementById("admin-login").style.display = "block";
+  document.getElementById("admin-dashboard").classList.remove("open");
+  document.getElementById("admin-pw").value = "";
+  document.getElementById("login-err").textContent = "";
+}
+
+// ─────────────────────────────────────────────────
+// DISTRICTS
+// ─────────────────────────────────────────────────
+function populateAllDistricts() {
+  ["f-district","i-district","e-district"].forEach(id => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">-- Select District --</option>';
+    districts.sort().forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = opt.textContent = d;
+      if (d === cur) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function renderDistrictManagerUI() {
+  const ul = document.getElementById("district-list-ui");
+  ul.innerHTML = "";
+  districts.slice().sort().forEach(d => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${d}</span>
+      <button class="dm-del" title="Remove ${d}" onclick="removeDistrict('${d.replace(/'/g,"\\'")}')">🗑</button>`;
+    ul.appendChild(li);
+  });
+}
+
+function addDistrict() {
+  const inp = document.getElementById("new-district-input");
+  const val = inp.value.trim();
+  if (!val) return;
+  if (districts.map(d=>d.toLowerCase()).includes(val.toLowerCase())) {
+    alert("District already exists."); return;
+  }
+  districts.push(val);
+  inp.value = "";
+  populateAllDistricts();
+  renderDistrictManagerUI();
+}
+
+function removeDistrict(name) {
+  if (!confirm(`Remove "${name}" from the list?`)) return;
+  districts = districts.filter(d => d !== name);
+  populateAllDistricts();
+  renderDistrictManagerUI();
+}
+
+// ─────────────────────────────────────────────────
+// VALIDATION HELPERS
+// ─────────────────────────────────────────────────
+function setErr(id, msg) {
+  const el = document.getElementById("err-" + id);
+  if (el) { el.textContent = msg; }
+  const inp = document.getElementById(id);
+  if (inp) inp.classList.toggle("err", !!msg);
+}
+function clearErrors(ids) { ids.forEach(id => setErr(id, "")); }
+
+function req(id, label) {
+  const el = document.getElementById(id);
+  if (!el || !el.value.trim()) { setErr(id, label + " is required."); return false; }
+  return true;
+}
+
+// ─────────────────────────────────────────────────
+// REF CODE
+// ─────────────────────────────────────────────────
+function genRef(prefix) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let c = "";
+  for (let i=0;i<8;i++) c += chars[Math.floor(Math.random()*chars.length)];
+  return `${prefix}-${c.slice(0,4)}-${c.slice(4)}`;
+}
+
+// ─────────────────────────────────────────────────
+// IMAGE PREVIEW
+// ─────────────────────────────────────────────────
+function previewImg(input, previewId) {
+  const prev = document.getElementById(previewId);
+  if (!input.files || !input.files[0]) { prev.style.display="none"; return; }
+  const reader = new FileReader();
+  reader.onload = e => { prev.src = e.target.result; prev.style.display = "block"; };
+  reader.readAsDataURL(input.files[0]);
+}
+
+// ─────────────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────────────
+function showModal(ref, tabLabel) {
+  document.getElementById("modal-ref-code").textContent = ref;
+  document.getElementById("modal-body-text").innerHTML =
+    `Your <strong>${tabLabel}</strong> has been submitted successfully. Keep your reference code for tracking.`;
+  document.getElementById("success-modal").classList.add("open");
+}
+function closeModal() {
+  document.getElementById("success-modal").classList.remove("open");
+  pendingReset = null;
+}
+function modalAnother() {
+  document.getElementById("success-modal").classList.remove("open");
+  if (pendingReset) { pendingReset(); pendingReset = null; }
+}
+
+// ─────────────────────────────────────────────────
+// SUBMIT: FAULT REPORT
+// ─────────────────────────────────────────────────
+function submitFault() {
+  clearErrors(["f-facility","f-district","f-ftype","f-equip","f-reporter","f-contact","f-desc"]);
+  let ok = true;
+  ok = req("f-facility","Facility name") && ok;
+  ok = req("f-district","District") && ok;
+  ok = req("f-ftype","Facility type") && ok;
+  ok = req("f-equip","Equipment name") && ok;
+  ok = req("f-reporter","Reporter name") && ok;
+  ok = req("f-contact","Contact number") && ok;
+  ok = req("f-desc","Fault description") && ok;
+  if (!ok) return;
+
+  const ref = genRef("FR");
+  const imgEl = document.getElementById("img-preview");
+  const record = {
+    ref, type: "fault_report",
+    facility:    document.getElementById("f-facility").value.trim(),
+    district:    document.getElementById("f-district").value,
+    ftype:       document.getElementById("f-ftype").value,
+    unit:        document.getElementById("f-unit").value.trim(),
+    equipment:   document.getElementById("f-equip").value.trim(),
+    desc:        document.getElementById("f-desc").value.trim(),
+    reporter:    document.getElementById("f-reporter").value.trim(),
+    contact:     document.getElementById("f-contact").value.trim(),
+    remarks:     document.getElementById("f-remarks").value.trim(),
+    image:       imgEl.style.display !== "none" ? imgEl.src : null,
+    status:      "received",
+    timestamp:   new Date().toISOString()
+  };
+
+  faultReports.unshift(record);
+  sendToGAS(record);
+
+  pendingReset = resetFaultForm;
+  showModal(ref, "Fault Report");
+}
+
+function resetFaultForm() {
+  ["f-facility","f-unit","f-equip","f-reporter","f-contact","f-desc","f-remarks"].forEach(id=>{
+    document.getElementById(id).value="";
+  });
+  document.getElementById("f-district").value="";
+  document.getElementById("f-ftype").value="";
+  document.getElementById("f-img").value="";
+  const prev = document.getElementById("img-preview");
+  prev.style.display="none"; prev.src="";
+}
+
+// ─────────────────────────────────────────────────
+// SUBMIT: INSTALLATION
+// ─────────────────────────────────────────────────
+function submitInstall() {
+  clearErrors(["i-facility","i-district","i-ftype","i-etype","i-qty","i-name","i-contact"]);
+  let ok = true;
+  ok = req("i-facility","Facility name") && ok;
+  ok = req("i-district","District") && ok;
+  ok = req("i-ftype","Facility type") && ok;
+  ok = req("i-etype","Equipment type") && ok;
+  ok = req("i-qty","Quantity") && ok;
+  ok = req("i-name","Requester name") && ok;
+  ok = req("i-contact","Contact number") && ok;
+  if (!ok) return;
+
+  const ref = genRef("IR");
+  const record = {
+    ref, type: "installation_request",
+    facility:  document.getElementById("i-facility").value.trim(),
+    district:  document.getElementById("i-district").value,
+    ftype:     document.getElementById("i-ftype").value,
+    etype:     document.getElementById("i-etype").value,
+    qty:       document.getElementById("i-qty").value,
+    date:      document.getElementById("i-date").value,
+    name:      document.getElementById("i-name").value.trim(),
+    grade:     document.getElementById("i-grade").value.trim(),
+    contact:   document.getElementById("i-contact").value.trim(),
+    status:    "pending",
+    timestamp: new Date().toISOString()
+  };
+
+  installReports.unshift(record);
+  sendToGAS(record);
+
+  pendingReset = () => {
+    ["i-facility","i-name","i-grade","i-contact","i-date"].forEach(id => document.getElementById(id).value="");
+    ["i-district","i-ftype","i-etype","i-qty"].forEach(id => document.getElementById(id).value="");
+  };
+  showModal(ref, "Installation Request");
+}
+
+// ─────────────────────────────────────────────────
+// SUBMIT: EQUIPMENT REQUEST
+// ─────────────────────────────────────────────────
+function submitEquip() {
+  clearErrors(["e-facility","e-district","e-etype","e-qty","e-name","e-contact","e-reason"]);
+  let ok = true;
+  ok = req("e-facility","Facility name") && ok;
+  ok = req("e-district","District") && ok;
+  ok = req("e-etype","Equipment type") && ok;
+  ok = req("e-qty","Quantity") && ok;
+  ok = req("e-name","Your name") && ok;
+  ok = req("e-contact","Contact number") && ok;
+  ok = req("e-reason","Reason for request") && ok;
+  if (!ok) return;
+
+  const ref = genRef("ER");
+  const record = {
+    ref, type: "equipment_request",
+    facility:  document.getElementById("e-facility").value.trim(),
+    district:  document.getElementById("e-district").value,
+    etype:     document.getElementById("e-etype").value,
+    qty:       document.getElementById("e-qty").value,
+    reason:    document.getElementById("e-reason").value.trim(),
+    name:      document.getElementById("e-name").value.trim(),
+    contact:   document.getElementById("e-contact").value.trim(),
+    grade:     document.getElementById("e-grade").value.trim(),
+    status:    "pending",
+    timestamp: new Date().toISOString()
+  };
+
+  equipReports.unshift(record);
+  sendToGAS(record);
+
+  pendingReset = () => {
+    ["e-facility","e-name","e-grade","e-contact","e-reason"].forEach(id => document.getElementById(id).value="");
+    ["e-district","e-etype","e-qty"].forEach(id => document.getElementById(id).value="");
+  };
+  showModal(ref, "Equipment Request");
+}
+
+// ─────────────────────────────────────────────────
+// SEND TO GOOGLE APPS SCRIPT
+// ─────────────────────────────────────────────────
+function sendToGAS(data) {
+  // Filter out image data (too large for JSON body; handle separately if needed)
+  const payload = Object.assign({}, data);
+  delete payload.image;
+  fetch(GAS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    mode: "no-cors"
+  }).catch(() => {}); // silent fail — local state is source of truth for demo
+}
+
+// ─────────────────────────────────────────────────
+// ADMIN: STATS
+// ─────────────────────────────────────────────────
+function renderStats() {
+  const total    = faultReports.length;
+  const received = faultReports.filter(r=>r.status==="received").length;
+  const repair   = faultReports.filter(r=>r.status==="under_repair").length;
+  const done     = faultReports.filter(r=>r.status==="repair_completed").length;
+  const obsolete = faultReports.filter(r=>r.status==="obsolete").length;
+
+  document.getElementById("stats-grid").innerHTML = `
+    <div class="stat-card s-blue"><span class="stat-num">${total}</span><span class="stat-lbl">Total Reports</span></div>
+    <div class="stat-card s-green"><span class="stat-num">${received}</span><span class="stat-lbl">Received</span></div>
+    <div class="stat-card s-amber"><span class="stat-num">${repair}</span><span class="stat-lbl">Under Repair</span></div>
+    <div class="stat-card s-teal"><span class="stat-num">${done}</span><span class="stat-lbl">Completed</span></div>
+    <div class="stat-card s-red"><span class="stat-num">${obsolete}</span><span class="stat-lbl">Obsolete</span></div>
+  `;
+}
+
+// ─────────────────────────────────────────────────
+// ADMIN: FAULT REPORTS LIST
+// ─────────────────────────────────────────────────
+function renderFaultList() {
+  const container = document.getElementById("fault-reports-list");
+  if (faultReports.length === 0) {
+    container.innerHTML = '<div class="empty-state">📭 No fault reports submitted yet.</div>'; return;
+  }
+  container.innerHTML = faultReports.map((r, idx) => `
+    <div class="report-card" id="card-${r.ref}">
+      <div class="report-meta">
+        <span class="report-ref">${r.ref}</span>
+        <span class="report-time">${new Date(r.timestamp).toLocaleString()}</span>
+      </div>
+      <div class="report-name">${r.equipment}</div>
+      <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district} &nbsp;·&nbsp; ${r.ftype}</div>
+      ${r.unit ? `<div class="report-detail">🏷 Unit: ${r.unit}</div>` : ""}
+      <div class="report-detail" style="margin-top:4px;">${r.desc}</div>
+      <div class="report-contact">👤 ${r.reporter} &nbsp;|&nbsp; 📞 ${r.contact}</div>
+      ${r.remarks ? `<div class="report-contact">📝 ${r.remarks}</div>` : ""}
+      ${r.image ? `<img class="report-img" src="${r.image}" style="display:block;" alt="Equipment Photo"/>` : ""}
+      <div class="status-stepper">
+        <div class="stepper-label">Update Status</div>
+        <div class="stepper-steps">${buildStepperHTML(r.ref, r.status)}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function buildStepperHTML(ref, currentStatus) {
+  const currentIdx = STATUS_STEPS.findIndex(s => s.key === currentStatus);
+  return STATUS_STEPS.map((s, i) => {
+    const isDone = i < currentIdx;
+    const isActive = i === currentIdx;
+    const cls = isActive ? "active" : isDone ? "done" : "";
+    return `<button class="step-pill ${cls}" onclick="updateFaultStatus('${ref}','${s.key}')">
+      <span class="step-dot"></span>${s.icon} ${s.label}
+    </button>`;
+  }).join("");
+}
+
+function updateFaultStatus(ref, newStatus) {
+  const idx = faultReports.findIndex(r => r.ref === ref);
+  if (idx === -1) return;
+  faultReports[idx].status = newStatus;
+
+  // Refresh stepper in-place
+  const card = document.getElementById("card-" + ref);
+  if (card) {
+    card.querySelector(".stepper-steps").innerHTML = buildStepperHTML(ref, newStatus);
+  }
+  renderStats();
+
+  // Sync to GAS
+  sendToGAS({ type: "update_status", ref, status: newStatus });
+}
+
+// ─────────────────────────────────────────────────
+// ADMIN: INSTALL LIST
+// ─────────────────────────────────────────────────
+function renderInstallList() {
+  const container = document.getElementById("install-list");
+  if (installReports.length === 0) {
+    container.innerHTML = '<div class="empty-state">📭 No installation requests submitted yet.</div>'; return;
+  }
+  container.innerHTML = installReports.map(r => `
+    <div class="report-card">
+      <div class="report-meta">
+        <span class="report-ref">${r.ref}</span>
+        <span class="report-time">${new Date(r.timestamp).toLocaleString()}</span>
+      </div>
+      <div class="report-name">${r.etype} — Qty: ${r.qty}</div>
+      <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district} &nbsp;·&nbsp; ${r.ftype}</div>
+      ${r.date ? `<div class="report-detail">📅 Preferred Date: ${r.date}</div>` : ""}
+      <div class="report-contact">👤 ${r.name}${r.grade ? " ("+r.grade+")" : ""} &nbsp;|&nbsp; 📞 ${r.contact}</div>
+    </div>
+  `).join("");
+}
+
+// ─────────────────────────────────────────────────
+// ADMIN: EQUIP REQUEST LIST
+// ─────────────────────────────────────────────────
+function renderEquipList() {
+  const container = document.getElementById("equip-list");
+  if (equipReports.length === 0) {
+    container.innerHTML = '<div class="empty-state">📭 No equipment requests submitted yet.</div>'; return;
+  }
+  container.innerHTML = equipReports.map(r => `
+    <div class="report-card">
+      <div class="report-meta">
+        <span class="report-ref">${r.ref}</span>
+        <span class="report-time">${new Date(r.timestamp).toLocaleString()}</span>
+      </div>
+      <div class="report-name">${r.etype} — Qty: ${r.qty}</div>
+      <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district}</div>
+      <div class="report-detail" style="margin-top:4px;">${r.reason}</div>
+      <div class="report-contact">👤 ${r.name}${r.grade ? " ("+r.grade+")" : ""} &nbsp;|&nbsp; 📞 ${r.contact}</div>
+    </div>
+  `).join("");
+}
+</script>
+</body>
+</html>
