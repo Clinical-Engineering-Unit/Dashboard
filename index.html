@@ -255,10 +255,11 @@
 <header class="app-header">
   <div class="header-inner">
     <div class="header-logo">🏥</div>
-    <div>
+    <div style="flex:1;">
       <div class="header-title">Regional Clinical Engineering Equipment Management</div>
       <div class="header-sub">Clinical Engineering Unit — Western Region Health Directorate, Ghana</div>
     </div>
+    <div id="gas-status" style="font-size:0.7rem;white-space:nowrap;opacity:0.85;">⏳ Connecting…</div>
   </div>
 </header>
 
@@ -619,25 +620,25 @@
 <!-- ════════════ JAVASCRIPT ════════════ -->
 <script>
 // ─────────────────────────────────────────────────
-// CONFIG
+// CONFIG — ✏️ Replace with your deployed GAS Web App URL
 // ─────────────────────────────────────────────────
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwJf0gmJdRg6gAbt3pSk18SnSNRB-1iku7V_cKw_T_XVoweHAj3otgDyb_me0yh1iCH/exec"; // ← Replace
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwJf0gmJdRg6gAbt3pSk18SnSNRB-1iku7V_cKw_T_XVoweHAj3otgDyb_me0yh1iCH/exec"; // ← Replace this
 
 const FACILITY_PLACEHOLDERS = [
-  "e.g. Effia Nkwanta Regional Hospital, Takoradi",
+  "e.g. Effia Nkwanta Regional Hospital, Sekondi",
   "e.g. Axim Government Hospital",
   "e.g. Prestea Government Hospital",
   "e.g. Tarkwa Municipal Hospital",
-  "e.g. Sekondi Polyclinic",
-  "e.g. Shama District Hospital",
-  "e.g. Eikwe Government Hospital",
-  "e.g. Asankragua Government Hospital",
+  "e.g. Agona Nkwanta Polyclinic",
+  "e.g. Aboso Health Centre",
+  "e.g. Effia Health Centre",
+  "e.g. Essikado Government Hospital",
   "e.g. Half Assini Government Hospital",
-  "e.g. Enchi Government Hospital"
+  "e.g. Manso Health Centre"
 ];
 
 const STATUS_STEPS = [
-  { key: "received",         label: "Received",        icon: "📥" },
+  { key: "Sent",         label: "Sent",        icon: "📥" },
   { key: "pending",          label: "Pending",          icon: "⏳" },
   { key: "under_repair",     label: "Under Repair",     icon: "🔧" },
   { key: "repair_completed", label: "Repair Completed", icon: "✅" },
@@ -863,7 +864,7 @@ function submitFault() {
   };
 
   faultReports.unshift(record);
-  sendToGAS(record);
+  sendToGAS(record, "submitFault");
 
   pendingReset = resetFaultForm;
   showModal(ref, "Fault Report");
@@ -912,7 +913,7 @@ function submitInstall() {
   };
 
   installReports.unshift(record);
-  sendToGAS(record);
+  sendToGAS(record, "submitInstall");
 
   pendingReset = () => {
     ["i-facility","i-name","i-grade","i-contact","i-date"].forEach(id => document.getElementById(id).value="");
@@ -952,7 +953,7 @@ function submitEquip() {
   };
 
   equipReports.unshift(record);
-  sendToGAS(record);
+  sendToGAS(record, "submitEquip");
 
   pendingReset = () => {
     ["e-facility","e-name","e-grade","e-contact","e-reason"].forEach(id => document.getElementById(id).value="");
@@ -963,18 +964,71 @@ function submitEquip() {
 
 // ─────────────────────────────────────────────────
 // SEND TO GOOGLE APPS SCRIPT
+// Uses a hidden <img> / script-tag trick to send
+// data via GET — this bypasses CORS entirely and
+// actually reaches the GAS Web App every time.
 // ─────────────────────────────────────────────────
-function sendToGAS(data) {
-  // Filter out image data (too large for JSON body; handle separately if needed)
-  const payload = Object.assign({}, data);
-  delete payload.image;
-  fetch(GAS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-    mode: "no-cors"
-  }).catch(() => {}); // silent fail — local state is source of truth for demo
+function sendToGAS(data, action) {
+  // Build query string from data object
+  const params = new URLSearchParams();
+  params.set("action", action || data.action || "submitFault");
+  Object.keys(data).forEach(k => {
+    if (k !== "image" && k !== "imagePreview" && data[k] !== null && data[k] !== undefined) {
+      params.set(k, String(data[k]));
+    }
+  });
+
+  const url = GAS_URL + "?" + params.toString();
+
+  // Use fetch without mode:no-cors — GAS GET returns JSON directly
+  fetch(url)
+    .then(res => res.json())
+    .then(result => {
+      if (result.ok) {
+        console.log("✅ GAS confirmed:", result);
+      } else {
+        console.warn("⚠️ GAS returned error:", result.error);
+      }
+    })
+    .catch(err => {
+      // Fallback: inject a script tag (works even if fetch is blocked by CORS)
+      console.warn("fetch failed, trying script tag:", err.message);
+      const cbName = "gasCallback_" + Date.now();
+      window[cbName] = function(result) {
+        console.log("✅ GAS script-tag response:", result);
+        delete window[cbName];
+        document.getElementById("gas-script-" + cbName) &&
+          document.getElementById("gas-script-" + cbName).remove();
+      };
+      const script = document.createElement("script");
+      script.id  = "gas-script-" + cbName;
+      script.src = url + "&callback=" + cbName;
+      script.onerror = () => console.warn("Script tag also failed — check GAS_URL.");
+      document.body.appendChild(script);
+    });
 }
+
+// Ping GAS on page load to confirm connection
+function pingGAS() {
+  const indicator = document.getElementById("gas-status");
+  if (!indicator) return;
+  if (GAS_URL.includes("YOUR_SCRIPT_ID")) {
+    indicator.textContent = "⚠️ GAS URL not set";
+    indicator.style.color = "#b7770d";
+    return;
+  }
+  fetch(GAS_URL + "?action=ping")
+    .then(r => r.json())
+    .then(d => {
+      indicator.textContent = d.ok ? "🟢 Connected to Google Sheets" : "🔴 GAS error";
+      indicator.style.color = d.ok ? "#117a65" : "#c0392b";
+    })
+    .catch(() => {
+      indicator.textContent = "🔴 Cannot reach GAS — check URL";
+      indicator.style.color = "#c0392b";
+    });
+}
+setTimeout(pingGAS, 800);
 
 // ─────────────────────────────────────────────────
 // ADMIN: STATS
@@ -1048,8 +1102,8 @@ function updateFaultStatus(ref, newStatus) {
   }
   renderStats();
 
-  // Sync to GAS
-  sendToGAS({ type: "update_status", ref, status: newStatus });
+  // Sync to GAS — sends status update to Google Sheet
+  sendToGAS({ ref: ref, status: newStatus }, "updateStatus");
 }
 
 // ─────────────────────────────────────────────────
