@@ -548,9 +548,12 @@
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.1rem;flex-wrap:wrap;gap:0.5rem;">
         <div>
           <div class="section-title" style="display:flex;align-items:center;gap:6px;">🔐 Admin Dashboard</div>
-          <div class="section-sub">Clinical Engineering Unit — Western Region</div>
+          <div class="section-sub">Clinical Engineering Unit — Western Region &nbsp;·&nbsp; <span id="last-refresh" style="font-size:0.72rem;color:var(--text3);">Not yet loaded</span></div>
         </div>
-        <button class="btn-outline btn-sm" onclick="doLogout()">Logout</button>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button class="btn-outline btn-sm" onclick="loadAllAdminData()" title="Reload all data from Google Sheets">🔄 Refresh</button>
+          <button class="btn-outline btn-sm" onclick="doLogout()">Logout</button>
+        </div>
       </div>
 
       <!-- Admin Sub-tabs -->
@@ -629,16 +632,16 @@ const FACILITY_PLACEHOLDERS = [
   "e.g. Axim Government Hospital",
   "e.g. Prestea Government Hospital",
   "e.g. Tarkwa Municipal Hospital",
-  "e.g. Agona Nkwanta Polyclinic",
-  "e.g. Aboso Health Centre",
-  "e.g. Effia Health Centre",
-  "e.g. Essikado Government Hospital",
+  "e.g. Takoradi Hospital",
+  "e.g. Shama Health Centre",
+  "e.g. Manso Health Centre",
+  "e.g. Kojokrom CHPS Compound",
   "e.g. Half Assini Government Hospital",
-  "e.g. Manso Health Centre"
+  "e.g. Enchi Government Hospital"
 ];
 
 const STATUS_STEPS = [
-  { key: "Sent",         label: "Sent",        icon: "📥" },
+  { key: "received",         label: "Received",        icon: "📥" },
   { key: "pending",          label: "Pending",          icon: "⏳" },
   { key: "under_repair",     label: "Under Repair",     icon: "🔧" },
   { key: "repair_completed", label: "Repair Completed", icon: "✅" },
@@ -653,9 +656,7 @@ let districts = [
   "Sekondi-Takoradi Metro","Ahanta West","Shama","Wassa East",
   "Wassa Amenfi East","Wassa Amenfi West","Wassa Amenfi Central",
   "Amenfi East","Mpohor","Tarkwa-Nsuaem","Prestea-Huni Valley",
-  "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East",
-  "Bia East","Bia West","Bodi","Aowin","Sefwi Wiawso",
-  "Sefwi Akontombra","Bibiani-Anhwiaso-Bekwai"
+  "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East"
 ];
 
 let faultReports   = [];
@@ -711,10 +712,7 @@ function doLogin() {
   if (pw === "CEUWRHD") {
     document.getElementById("admin-login").style.display = "none";
     document.getElementById("admin-dashboard").classList.add("open");
-    renderStats();
-    renderFaultList();
-    renderInstallList();
-    renderEquipList();
+    loadAllAdminData();
   } else {
     document.getElementById("login-err").textContent = "Incorrect password. Please try again.";
   }
@@ -724,6 +722,106 @@ function doLogout() {
   document.getElementById("admin-dashboard").classList.remove("open");
   document.getElementById("admin-pw").value = "";
   document.getElementById("login-err").textContent = "";
+}
+
+// ─────────────────────────────────────────────────
+// ADMIN: FETCH ALL DATA LIVE FROM GOOGLE SHEETS
+// Called on login and on manual refresh
+// ─────────────────────────────────────────────────
+function loadAllAdminData() {
+  loadingState("fault-reports-list", "📡 Loading fault reports from Google Sheets…");
+  loadingState("install-list",       "📡 Loading installation requests…");
+  loadingState("equip-list",         "📡 Loading equipment requests…");
+  document.getElementById("stats-grid").innerHTML =
+    '<div style="grid-column:1/-1;font-size:0.8rem;color:var(--text3);">⏳ Loading stats…</div>';
+
+  const stamp = document.getElementById("last-refresh");
+  if (stamp) stamp.textContent = "Loading…";
+
+  fetchFromGAS("fault",   data => { faultReports   = data; renderFaultList();   renderStats(); });
+  fetchFromGAS("install", data => { installReports = data; renderInstallList(); });
+  fetchFromGAS("equip",   data => { equipReports   = data; renderEquipList();
+    // Stamp time after last fetch completes
+    if (stamp) stamp.textContent = "Last updated: " + new Date().toLocaleTimeString();
+  });
+}
+
+function fetchFromGAS(type, onSuccess) {
+  const url = GAS_URL + "?action=getAll&type=" + type;
+  fetch(url)
+    .then(r => r.json())
+    .then(result => {
+      if (result.ok && Array.isArray(result.records)) {
+        // Map Sheet column headers → friendly field names used by render functions
+        const mapped = result.records.map(row => mapSheetRow(type, row));
+        onSuccess(mapped);
+      } else {
+        console.warn("GAS getAll error:", result.error);
+        onSuccess([]);
+      }
+    })
+    .catch(err => {
+      console.warn("fetchFromGAS failed for " + type + ":", err.message);
+      onSuccess([]);
+    });
+}
+
+// Maps raw Google Sheet column headers to the field names the render functions expect
+function mapSheetRow(type, row) {
+  if (type === "fault") {
+    return {
+      ref:       row["Ref Code"]           || "",
+      timestamp: row["Timestamp"]          || "",
+      facility:  row["Facility Name"]      || "",
+      district:  row["District"]           || "",
+      ftype:     row["Facility Type"]      || "",
+      unit:      row["Unit / Department"]  || "",
+      equipment: row["Equipment Name"]     || "",
+      desc:      row["Fault Description"]  || "",
+      reporter:  row["Reporter Name"]      || "",
+      contact:   row["Contact Number"]     || "",
+      remarks:   row["Remarks"]            || "",
+      status:    row["Status"]             || "Received",
+      image:     null
+    };
+  }
+  if (type === "install") {
+    return {
+      ref:      row["Ref Code"]          || "",
+      timestamp:row["Timestamp"]         || "",
+      facility: row["Facility Name"]     || "",
+      district: row["District"]          || "",
+      ftype:    row["Facility Type"]     || "",
+      etype:    row["Equipment Type"]    || "",
+      qty:      row["Quantity"]          || "",
+      date:     row["Preferred Date"]    || "",
+      name:     row["Requester Name"]    || "",
+      grade:    row["Grade / Position"]  || "",
+      contact:  row["Contact Number"]    || "",
+      status:   row["Status"]            || ""
+    };
+  }
+  if (type === "equip") {
+    return {
+      ref:      row["Ref Code"]           || "",
+      timestamp:row["Timestamp"]          || "",
+      facility: row["Facility Name"]      || "",
+      district: row["District"]           || "",
+      etype:    row["Equipment Type"]     || "",
+      qty:      row["Quantity Needed"]    || "",
+      reason:   row["Reason for Request"] || "",
+      name:     row["Requester Name"]     || "",
+      contact:  row["Contact Number"]     || "",
+      grade:    row["Grade / Position"]   || "",
+      status:   row["Status"]             || ""
+    };
+  }
+  return row;
+}
+
+function loadingState(containerId, msg) {
+  const el = document.getElementById(containerId);
+  if (el) el.innerHTML = '<div class="empty-state" style="color:var(--primary);">' + msg + '</div>';
 }
 
 // ─────────────────────────────────────────────────
@@ -1031,14 +1129,14 @@ function pingGAS() {
 setTimeout(pingGAS, 800);
 
 // ─────────────────────────────────────────────────
-// ADMIN: STATS
+// ADMIN: STATS (driven by live faultReports array)
 // ─────────────────────────────────────────────────
 function renderStats() {
   const total    = faultReports.length;
-  const received = faultReports.filter(r=>r.status==="received").length;
-  const repair   = faultReports.filter(r=>r.status==="under_repair").length;
-  const done     = faultReports.filter(r=>r.status==="repair_completed").length;
-  const obsolete = faultReports.filter(r=>r.status==="obsolete").length;
+  const received = faultReports.filter(r => r.status === "Received"         || r.status === "received").length;
+  const repair   = faultReports.filter(r => r.status === "Under Repair"     || r.status === "under_repair").length;
+  const done     = faultReports.filter(r => r.status === "Repair Completed" || r.status === "repair_completed").length;
+  const obsolete = faultReports.filter(r => r.status === "Obsolete"         || r.status === "obsolete").length;
 
   document.getElementById("stats-grid").innerHTML = `
     <div class="stat-card s-blue"><span class="stat-num">${total}</span><span class="stat-lbl">Total Reports</span></div>
@@ -1054,22 +1152,21 @@ function renderStats() {
 // ─────────────────────────────────────────────────
 function renderFaultList() {
   const container = document.getElementById("fault-reports-list");
-  if (faultReports.length === 0) {
-    container.innerHTML = '<div class="empty-state">📭 No fault reports submitted yet.</div>'; return;
+  if (!faultReports.length) {
+    container.innerHTML = '<div class="empty-state">📭 No fault reports found in Google Sheets.</div>'; return;
   }
-  container.innerHTML = faultReports.map((r, idx) => `
+  container.innerHTML = faultReports.map(r => `
     <div class="report-card" id="card-${r.ref}">
       <div class="report-meta">
         <span class="report-ref">${r.ref}</span>
-        <span class="report-time">${new Date(r.timestamp).toLocaleString()}</span>
+        <span class="report-time">${r.timestamp ? new Date(r.timestamp).toLocaleString() : ""}</span>
       </div>
       <div class="report-name">${r.equipment}</div>
       <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district} &nbsp;·&nbsp; ${r.ftype}</div>
-      ${r.unit ? `<div class="report-detail">🏷 Unit: ${r.unit}</div>` : ""}
+      ${r.unit    ? `<div class="report-detail">🏷 Unit: ${r.unit}</div>` : ""}
       <div class="report-detail" style="margin-top:4px;">${r.desc}</div>
       <div class="report-contact">👤 ${r.reporter} &nbsp;|&nbsp; 📞 ${r.contact}</div>
       ${r.remarks ? `<div class="report-contact">📝 ${r.remarks}</div>` : ""}
-      ${r.image ? `<img class="report-img" src="${r.image}" style="display:block;" alt="Equipment Photo"/>` : ""}
       <div class="status-stepper">
         <div class="stepper-label">Update Status</div>
         <div class="stepper-steps">${buildStepperHTML(r.ref, r.status)}</div>
@@ -1079,9 +1176,11 @@ function renderFaultList() {
 }
 
 function buildStepperHTML(ref, currentStatus) {
-  const currentIdx = STATUS_STEPS.findIndex(s => s.key === currentStatus);
+  // Normalise status — Sheet stores "Received", HTML uses "received"
+  const normalise = s => (s || "").toLowerCase().replace(/ /g, "_");
+  const currentIdx = STATUS_STEPS.findIndex(s => s.key === normalise(currentStatus));
   return STATUS_STEPS.map((s, i) => {
-    const isDone = i < currentIdx;
+    const isDone   = i < currentIdx;
     const isActive = i === currentIdx;
     const cls = isActive ? "active" : isDone ? "done" : "";
     return `<button class="step-pill ${cls}" onclick="updateFaultStatus('${ref}','${s.key}')">
@@ -1092,17 +1191,13 @@ function buildStepperHTML(ref, currentStatus) {
 
 function updateFaultStatus(ref, newStatus) {
   const idx = faultReports.findIndex(r => r.ref === ref);
-  if (idx === -1) return;
-  faultReports[idx].status = newStatus;
+  if (idx !== -1) faultReports[idx].status = newStatus;
 
-  // Refresh stepper in-place
   const card = document.getElementById("card-" + ref);
-  if (card) {
-    card.querySelector(".stepper-steps").innerHTML = buildStepperHTML(ref, newStatus);
-  }
+  if (card) card.querySelector(".stepper-steps").innerHTML = buildStepperHTML(ref, newStatus);
   renderStats();
 
-  // Sync to GAS — sends status update to Google Sheet
+  // Write change back to Google Sheet
   sendToGAS({ ref: ref, status: newStatus }, "updateStatus");
 }
 
@@ -1111,19 +1206,20 @@ function updateFaultStatus(ref, newStatus) {
 // ─────────────────────────────────────────────────
 function renderInstallList() {
   const container = document.getElementById("install-list");
-  if (installReports.length === 0) {
-    container.innerHTML = '<div class="empty-state">📭 No installation requests submitted yet.</div>'; return;
+  if (!installReports.length) {
+    container.innerHTML = '<div class="empty-state">📭 No installation requests found in Google Sheets.</div>'; return;
   }
   container.innerHTML = installReports.map(r => `
     <div class="report-card">
       <div class="report-meta">
         <span class="report-ref">${r.ref}</span>
-        <span class="report-time">${new Date(r.timestamp).toLocaleString()}</span>
+        <span class="report-time">${r.timestamp ? new Date(r.timestamp).toLocaleString() : ""}</span>
       </div>
       <div class="report-name">${r.etype} — Qty: ${r.qty}</div>
       <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district} &nbsp;·&nbsp; ${r.ftype}</div>
       ${r.date ? `<div class="report-detail">📅 Preferred Date: ${r.date}</div>` : ""}
       <div class="report-contact">👤 ${r.name}${r.grade ? " ("+r.grade+")" : ""} &nbsp;|&nbsp; 📞 ${r.contact}</div>
+      <div class="report-detail" style="margin-top:4px;font-size:0.75rem;color:var(--text3);">Status: ${r.status}</div>
     </div>
   `).join("");
 }
@@ -1133,19 +1229,20 @@ function renderInstallList() {
 // ─────────────────────────────────────────────────
 function renderEquipList() {
   const container = document.getElementById("equip-list");
-  if (equipReports.length === 0) {
-    container.innerHTML = '<div class="empty-state">📭 No equipment requests submitted yet.</div>'; return;
+  if (!equipReports.length) {
+    container.innerHTML = '<div class="empty-state">📭 No equipment requests found in Google Sheets.</div>'; return;
   }
   container.innerHTML = equipReports.map(r => `
     <div class="report-card">
       <div class="report-meta">
         <span class="report-ref">${r.ref}</span>
-        <span class="report-time">${new Date(r.timestamp).toLocaleString()}</span>
+        <span class="report-time">${r.timestamp ? new Date(r.timestamp).toLocaleString() : ""}</span>
       </div>
       <div class="report-name">${r.etype} — Qty: ${r.qty}</div>
       <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district}</div>
       <div class="report-detail" style="margin-top:4px;">${r.reason}</div>
       <div class="report-contact">👤 ${r.name}${r.grade ? " ("+r.grade+")" : ""} &nbsp;|&nbsp; 📞 ${r.contact}</div>
+      <div class="report-detail" style="margin-top:4px;font-size:0.75rem;color:var(--text3);">Status: ${r.status}</div>
     </div>
   `).join("");
 }
