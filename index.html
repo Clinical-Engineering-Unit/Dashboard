@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Regional Clinical Engineering Equipment Management Dashboard</title>
+<title>Regional Clinical Engineering Equipment Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -239,6 +239,57 @@
   .app-footer { text-align: center; padding: 1.25rem 1rem; font-size: 0.7rem; color: var(--text3); border-top: 1px solid var(--border); margin-top: 1rem; }
 
   /* ── RESPONSIVE ── */
+  /* ── PUBLIC STATUS TRACKER ── */
+  .tracker-card {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 1.4rem; box-shadow: var(--shadow); border: 1px solid var(--border);
+    margin-top: 1.5rem;
+  }
+  .tracker-header { display:flex; align-items:flex-start; gap:0.85rem; margin-bottom:1.25rem; }
+  .tracker-icon { font-size:1.6rem; width:42px; height:42px; background:#eef2f7; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .tracker-title { font-size:1rem; font-weight:800; color:var(--primary); }
+  .tracker-sub { font-size:0.77rem; color:var(--text3); margin-top:3px; }
+
+  .tracker-input-row { display:flex; gap:0.65rem; margin-bottom:1.1rem; flex-wrap:wrap; }
+  .tracker-input-row input { flex:1; min-width:180px; font-family:'Space Mono',monospace; font-size:0.88rem; letter-spacing:0.06em; text-transform:uppercase; }
+  .tracker-input-row .btn-primary { white-space:nowrap; padding:0.6rem 1.25rem; }
+
+  .track-state { text-align:center; padding:1.5rem; color:var(--text2); }
+  .track-spinner { font-size:2rem; animation:spin 1.2s linear infinite; display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .track-error { color:var(--red); }
+
+  .track-info-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.75rem; margin-bottom:1.25rem; }
+  .track-info-item { background:var(--surface2); border-radius:8px; padding:0.65rem 0.85rem; border:1px solid var(--border); }
+  .track-info-label { display:block; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text3); margin-bottom:3px; }
+  .track-info-value { display:block; font-size:0.85rem; font-weight:600; color:var(--text); }
+  .track-info-value.mono { font-family:'Space Mono',monospace; color:var(--primary); }
+
+  .status-progress-wrap { margin-bottom:1rem; }
+  .status-progress-label { font-size:0.72rem; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.6rem; }
+  .status-progress-steps { display:flex; flex-wrap:wrap; gap:0.35rem; }
+  .sp-step {
+    display:flex; align-items:center; gap:5px;
+    padding:0.35rem 0.7rem; border-radius:999px;
+    border:2px solid var(--border); background:var(--surface2);
+    font-size:0.72rem; font-weight:600; color:var(--text3);
+  }
+  .sp-step.sp-done { background:var(--accent-faint); border-color:var(--accent); color:var(--accent); }
+  .sp-step.sp-active { background:var(--primary); border-color:var(--primary); color:white; font-weight:800; }
+  .sp-dot { width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+  .current-status-wrap { text-align:center; margin-top:0.75rem; }
+  .current-status-badge {
+    display:inline-block; padding:0.5rem 1.5rem; border-radius:999px;
+    font-size:0.88rem; font-weight:800; letter-spacing:0.03em;
+  }
+  .badge-received   { background:#d6eaf8; color:#1b4f72; }
+  .badge-pending    { background:#fef9e7; color:#b7770d; }
+  .badge-under_repair { background:#fdebd0; color:#a04000; }
+  .badge-repair_completed { background:#d0ece7; color:#117a65; }
+  .badge-dispatched { background:#e8daef; color:#6c3483; }
+  .badge-obsolete   { background:#fdf0ef; color:#c0392b; }
+
   @media (max-width: 480px) {
     .form-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: repeat(2,1fr); }
@@ -266,9 +317,9 @@
 <!-- ════════════ TAB NAV ════════════ -->
 <nav class="tab-nav">
   <div class="tab-nav-inner">
-    <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Report Form</button>
-    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation Form</button>
-    <button class="tab-btn" onclick="showTab('equip',this)">🏥 Medical Equipment Needs Form</button>
+    <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Report</button>
+    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation Request</button>
+    <button class="tab-btn" onclick="showTab('equip',this)">🏥 Equipment Request</button>
     <button class="tab-btn" onclick="showTab('admin',this)">🔐 Admin</button>
   </div>
 </nav>
@@ -282,7 +333,7 @@
       <div class="section-icon icon-fault">⚠️</div>
       <div>
         <div class="section-title">Medical Equipment Fault Reporting</div>
-        <div class="section-sub">Report equipment faults for prompt action by the Clinical Engineering Unit</div>
+        <div class="section-sub">Report equipment faults for assessment by the Clinical Engineering Unit</div>
       </div>
     </div>
 
@@ -308,7 +359,7 @@
             <option>District Hospital</option><option>Polyclinic</option>
             <option>Health Centre</option><option>CHPS Compound</option>
             <option>Private Hospital</option><option>Mission/Faith-Based Hospital</option>
-            <option>Maternity Home</option><option>Clinic</option>
+            <option>Quasi-Government</option><option>Clinic</option>
           </select>
           <span class="err-msg" id="err-f-ftype"></span>
         </div>
@@ -359,6 +410,75 @@
         <button class="btn-primary" onclick="submitFault()">📤 Submit Fault Report</button>
       </div>
     </div>
+
+    <!-- ── STATUS TRACKER (public) ── -->
+    <div class="tracker-card">
+      <div class="tracker-header">
+        <div class="tracker-icon">🔍</div>
+        <div>
+          <div class="tracker-title">Track Your Fault Report Status</div>
+          <div class="tracker-sub">Enter your reference code to check the current status of your submitted fault report</div>
+        </div>
+      </div>
+
+      <div class="tracker-input-row">
+        <input type="text" id="track-ref-input"
+          placeholder="e.g. FR-A3XK-7QPL"
+          oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter')checkStatus()"/>
+        <button class="btn-primary" onclick="checkStatus()" id="track-btn">🔎 Check Status</button>
+      </div>
+
+      <div id="track-result" style="display:none;">
+
+        <!-- Loading state -->
+        <div id="track-loading" style="display:none;" class="track-state">
+          <div class="track-spinner">⏳</div>
+          <p>Checking status from Google Sheets…</p>
+        </div>
+
+        <!-- Not found state -->
+        <div id="track-notfound" style="display:none;" class="track-state track-error">
+          <div style="font-size:2rem;">❌</div>
+          <p><strong>Reference code not found.</strong></p>
+          <p style="font-size:0.78rem;color:var(--text3);">Please check the code and try again. You can contact the Regional Equipment Manager on 0506971001. Reference codes look like <strong>FR-XXXX-XXXX</strong></p>
+        </div>
+
+        <!-- Found state -->
+        <div id="track-found" style="display:none;">
+          <div class="track-info-grid">
+            <div class="track-info-item">
+              <span class="track-info-label">Reference Code</span>
+              <span class="track-info-value mono" id="tr-ref"></span>
+            </div>
+            <div class="track-info-item">
+              <span class="track-info-label">Facility</span>
+              <span class="track-info-value" id="tr-facility"></span>
+            </div>
+            <div class="track-info-item">
+              <span class="track-info-label">Equipment</span>
+              <span class="track-info-value" id="tr-equipment"></span>
+            </div>
+            <div class="track-info-item">
+              <span class="track-info-label">Last Updated</span>
+              <span class="track-info-value" id="tr-updated"></span>
+            </div>
+          </div>
+
+          <!-- Status progress bar -->
+          <div class="status-progress-wrap">
+            <div class="status-progress-label">Current Status</div>
+            <div class="status-progress-steps" id="tr-steps"></div>
+          </div>
+
+          <!-- Current status badge -->
+          <div class="current-status-wrap">
+            <span class="current-status-badge" id="tr-badge"></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <!-- ══ TAB 2: INSTALLATION REQUEST ══ -->
@@ -367,12 +487,12 @@
       <div class="section-icon icon-install">🔩</div>
       <div>
         <div class="section-title">Request for Equipment Installation</div>
-        <div class="section-sub">Submit a request when your facility has received new equipment and requires installation support</div>
+        <div class="section-sub">Submit a request when your facility has received new equipment and requires user training and installation support</div>
       </div>
     </div>
 
     <div class="banner banner-blue">
-      💡 <strong>Note:</strong> This form is for newly received equipment that requires professional installation or commissioning by the Clinical Engineering Unit.
+      💡 <strong>Note:</strong> This form is for newly received equipment that requires professional installation and user training by the Clinical Engineering Unit.Contact us on 0506971001
     </div>
 
     <div class="form-card">
@@ -434,7 +554,7 @@
         </div>
         <div class="field-group">
           <label class="field-label">Grade / Position</label>
-          <input type="text" id="i-grade" placeholder="e.g. Hospital Admin, Med. Sup, Nurse Manager"/>
+          <input type="text" id="i-grade" placeholder="e.g. Biomedical Engineer, Nurse Manager"/>
         </div>
         <div class="field-group">
           <label class="field-label">Contact Number <span class="req">*</span></label>
@@ -454,12 +574,12 @@
       <div class="section-icon icon-equip">🏥</div>
       <div>
         <div class="section-title">Medical Equipment Request</div>
-        <div class="section-sub">Request medical equipment your facility requires to improve patient care.</div>
+        <div class="section-sub">Request medical equipment your facility requires to improve patient care</div>
       </div>
     </div>
 
     <div class="banner banner-green">
-      ⚖️ <strong>Equity Notice:</strong> Information provided through this form will be used to assess and guide equitable distribution of medical equipment across all facilities in the region. Please be as accurate as possible.
+      ⚖️ <strong>Equity Notice:</strong> Information provided through this form will be used to assess and guide equitable distribution of medical equipment across all facilities in the region. Please be as accurate as possible. Contact the Regional Equipment Manager on 0506971001
     </div>
 
     <div class="form-card">
@@ -657,7 +777,9 @@ let districts = [
   "Sekondi-Takoradi Metro","Ahanta West","Shama","Wassa East",
   "Wassa Amenfi East","Wassa Amenfi West","Wassa Amenfi Central",
   "Amenfi East","Mpohor","Tarkwa-Nsuaem","Prestea-Huni Valley",
-  "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East"
+  "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East",
+  "Bia East","Bia West","Bodi","Aowin","Sefwi Wiawso",
+  "Sefwi Akontombra","Bibiani-Anhwiaso-Bekwai"
 ];
 
 let faultReports   = [];
@@ -1156,7 +1278,7 @@ function openGoogleSheet() {
   var sheetId = "";
   // Extract sheet ID from GAS URL if possible, or use stored ID
   // Admin must set SHEET_ID below to match their Google Sheet
-  var SHEET_ID = "1kFbir8GNGqDWVSgJpy6vxZfBpUKI-3rIoFZ3ytpeyeA"; // ← same ID as in Code.gs
+  var SHEET_ID = "PASTE_YOUR_SPREADSHEET_ID_HERE"; // ← same ID as in Code.gs
   if (SHEET_ID && SHEET_ID !== "PASTE_YOUR_SPREADSHEET_ID_HERE") {
     window.open("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/edit", "_blank");
   } else {
@@ -1287,6 +1409,120 @@ function renderEquipList() {
     </div>
   `).join("");
 }
+// ─────────────────────────────────────────────────
+// PUBLIC STATUS CHECKER
+// Anyone with a ref code can look up their status
+// ─────────────────────────────────────────────────
+const STATUS_META = {
+  received:         { label: "Received by Engineering Unit", icon: "📥", cls: "badge-received" },
+  pending:          { label: "Pending Assessment",           icon: "⏳", cls: "badge-pending" },
+  under_repair:     { label: "Under Repair",                 icon: "🔧", cls: "badge-under_repair" },
+  repair_completed: { label: "Repair Completed",             icon: "✅", cls: "badge-repair_completed" },
+  dispatched:       { label: "Dispatched",                   icon: "🚚", cls: "badge-dispatched" },
+  obsolete:         { label: "Declared Obsolete",            icon: "⛔", cls: "badge-obsolete" }
+};
+
+function checkStatus() {
+  const raw = document.getElementById("track-ref-input").value.trim().toUpperCase();
+  if (!raw) {
+    document.getElementById("track-ref-input").focus();
+    return;
+  }
+
+  // Show result area, hide sub-panels, show loading
+  document.getElementById("track-result").style.display    = "block";
+  document.getElementById("track-loading").style.display   = "block";
+  document.getElementById("track-notfound").style.display  = "none";
+  document.getElementById("track-found").style.display     = "none";
+  document.getElementById("track-btn").disabled            = true;
+  document.getElementById("track-btn").textContent         = "⏳ Checking…";
+
+  if (GAS_URL.includes("YOUR_SCRIPT_ID")) {
+    showTrackError("GAS URL not configured. Please contact the Clinical Engineering Unit.");
+    return;
+  }
+
+  // Use JSONP script-tag — same CORS-safe method used everywhere else
+  const cbName = "statusCB_" + Date.now();
+  const url    = GAS_URL + "?action=getStatus&ref=" + encodeURIComponent(raw) + "&callback=" + cbName;
+
+  const timer = setTimeout(function() {
+    delete window[cbName];
+    showTrackError("No response from server. Please try again or contact the Engineering Unit.");
+  }, 15000);
+
+  window[cbName] = function(result) {
+    clearTimeout(timer);
+    delete window[cbName];
+    const old = document.getElementById("status-cb-script");
+    if (old) old.remove();
+
+    document.getElementById("track-btn").disabled    = false;
+    document.getElementById("track-btn").textContent = "🔎 Check Status";
+    document.getElementById("track-loading").style.display = "none";
+
+    if (!result || !result.ok) {
+      showTrackError("An error occurred. Please try again.");
+      return;
+    }
+    if (!result.found) {
+      document.getElementById("track-notfound").style.display = "block";
+      return;
+    }
+    renderTrackResult(result);
+  };
+
+  const script    = document.createElement("script");
+  script.id       = "status-cb-script";
+  script.src      = url;
+  script.onerror  = function() {
+    clearTimeout(timer);
+    delete window[cbName];
+    showTrackError("Could not reach server. Check your connection and try again.");
+  };
+  document.body.appendChild(script);
+}
+
+function showTrackError(msg) {
+  document.getElementById("track-loading").style.display  = "none";
+  document.getElementById("track-found").style.display    = "none";
+  document.getElementById("track-btn").disabled           = false;
+  document.getElementById("track-btn").textContent        = "🔎 Check Status";
+  const nf = document.getElementById("track-notfound");
+  nf.style.display = "block";
+  nf.querySelector("p").innerHTML = "<strong>" + msg + "</strong>";
+}
+
+function renderTrackResult(result) {
+  document.getElementById("track-found").style.display = "block";
+
+  // Fill info cards
+  document.getElementById("tr-ref").textContent       = result.ref        || "—";
+  document.getElementById("tr-facility").textContent  = result.facility   || "—";
+  document.getElementById("tr-equipment").textContent = result.equipment  || (result.type === "installation_request" ? "Installation Request" : "Equipment Request");
+
+  const updRaw = result.lastUpdated || result.timestamp || "";
+  document.getElementById("tr-updated").textContent   = updRaw ? new Date(updRaw).toLocaleString() : "—";
+
+  // Build status progress steps
+  const currentKey = normaliseStatus(result.status);
+  const currentIdx = STATUS_STEPS.findIndex(function(s){ return s.key === currentKey; });
+
+  const stepsHTML = STATUS_STEPS.map(function(s, i) {
+    const isDone   = i < currentIdx;
+    const isActive = i === currentIdx;
+    const cls = isActive ? "sp-step sp-active" : isDone ? "sp-step sp-done" : "sp-step";
+    return '<div class="' + cls + '"><span class="sp-dot"></span>' + s.icon + " " + s.label + "</div>";
+  }).join("");
+  document.getElementById("tr-steps").innerHTML = stepsHTML;
+
+  // Status badge
+  const meta    = STATUS_META[currentKey] || { label: result.status || "Unknown", icon: "❓", cls: "" };
+  const badge   = document.getElementById("tr-badge");
+  badge.textContent = meta.icon + "  " + meta.label;
+  badge.className   = "current-status-badge " + meta.cls;
+}
+
 </script>
 </body>
 </html>
