@@ -554,7 +554,7 @@
         </div>
         <div class="field-group">
           <label class="field-label">Grade / Position</label>
-          <input type="text" id="i-grade" placeholder="e.g. Med. Sup, Hospital Admin, Nurse Manager"/>
+          <input type="text" id="i-grade" placeholder="e.g. Biomedical Engineer, Nurse Manager"/>
         </div>
         <div class="field-group">
           <label class="field-label">Contact Number <span class="req">*</span></label>
@@ -625,7 +625,7 @@
         </div>
         <div class="field-group">
           <label class="field-label">Grade / Position</label>
-          <input type="text" id="e-grade" placeholder="e.g. Nurse Manager, In-charge, Administrator"/>
+          <input type="text" id="e-grade" placeholder="e.g. Facility Manager, Biomedical Technician"/>
         </div>
         <div class="field-group">
           <label class="field-label">Your Contact Number <span class="req">*</span></label>
@@ -635,7 +635,7 @@
       </div>
       <div class="field-group" style="margin-bottom:1rem;">
         <label class="field-label">Reasons for the Request <span class="req">*</span></label>
-        <p class="field-hint">State the exact type of equipment. Explain why your facility needs this equipment and how it will improve patient outcomes</p>
+        <p class="field-hint">Explain why your facility needs this equipment and how it will improve patient outcomes</p>
         <textarea id="e-reason" rows="5" placeholder="Provide detailed justification — patient volume, current gaps, clinical need, etc."></textarea>
         <span class="err-msg" id="err-e-reason"></span>
       </div>
@@ -1279,7 +1279,7 @@ function openGoogleSheet() {
   // Extract sheet ID from GAS URL if possible, or use stored ID
   // Admin must set SHEET_ID below to match their Google Sheet
   var SHEET_ID = "1kFbir8GNGqDWVSgJpy6vxZfBpUKI-3rIoFZ3ytpeyeA"; // ← same ID as in Code.gs
-  if (SHEET_ID && SHEET_ID !== "PASTE_YOUR_SPREADSHEET_ID_HERE") {
+  if (SHEET_ID && SHEET_ID !== "1kFbir8GNGqDWVSgJpy6vxZfBpUKI-3rIoFZ3ytpeyeA") {
     window.open("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/edit", "_blank");
   } else {
     alert("To enable this button, open CEU_Dashboard.html in a text editor and replace\n\nPASTE_YOUR_SPREADSHEET_ID_HERE\n\nin the openGoogleSheet() function with your actual Google Sheet ID.");
