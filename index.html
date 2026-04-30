@@ -256,7 +256,7 @@
   <div class="header-inner">
     <div class="header-logo">🏥</div>
     <div style="flex:1;">
-      <div class="header-title">Regional Clinical Engineering Medical Equipment Management Dashboard</div>
+      <div class="header-title">Clinical Engineering Medical Equipment Management Dashboard</div>
       <div class="header-sub">Western Region Health Directorate, Ghana Health Service</div>
     </div>
     <div id="gas-status" style="font-size:0.7rem;white-space:nowrap;opacity:0.85;">⏳ Connecting…</div>
@@ -266,9 +266,9 @@
 <!-- ════════════ TAB NAV ════════════ -->
 <nav class="tab-nav">
   <div class="tab-nav-inner">
-    <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Reporting</button>
-    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation Request</button>
-    <button class="tab-btn" onclick="showTab('equip',this)">🏥 Equipment Request</button>
+    <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Reporting Form</button>
+    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation Request Form</button>
+    <button class="tab-btn" onclick="showTab('equip',this)">🏥 Medical Equipment Request Form</button>
     <button class="tab-btn" onclick="showTab('admin',this)">🔐 Admin</button>
   </div>
 </nav>
@@ -552,6 +552,7 @@
         </div>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
           <button class="btn-outline btn-sm" onclick="loadAllAdminData()" title="Reload all data from Google Sheets">🔄 Refresh</button>
+          <button class="btn-outline btn-sm" id="open-sheet-btn" onclick="openGoogleSheet()" title="Open Google Sheet directly">📊 Open Sheet</button>
           <button class="btn-outline btn-sm" onclick="doLogout()">Logout</button>
         </div>
       </div>
@@ -628,16 +629,16 @@
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwJf0gmJdRg6gAbt3pSk18SnSNRB-1iku7V_cKw_T_XVoweHAj3otgDyb_me0yh1iCH/exec"; // ← Replace this
 
 const FACILITY_PLACEHOLDERS = [
-  "e.g. Effia Nkwanta Regional Hospital, Sekondi",
+  "e.g. Effia Nkwanta Regional Hospital, Takoradi",
   "e.g. Axim Government Hospital",
   "e.g. Prestea Government Hospital",
   "e.g. Tarkwa Municipal Hospital",
-  "e.g. Takoradi Hospital",
+  "e.g. Sekondi Polyclinic",
   "e.g. Shama Health Centre",
-  "e.g. Manso Health Centre",
-  "e.g. Kojokrom CHPS Compound",
+  "e.g. Kojokrom CHPS Compund",
+  "e.g. Abura Health Centre",
   "e.g. Half Assini Government Hospital",
-  "e.g. Enchi Government Hospital"
+  "e.g. Elubo Polyclinic"
 ];
 
 const STATUS_STEPS = [
@@ -747,23 +748,43 @@ function loadAllAdminData() {
 }
 
 function fetchFromGAS(type, onSuccess) {
-  const url = GAS_URL + "?action=getAll&type=" + type;
-  fetch(url)
-    .then(r => r.json())
-    .then(result => {
-      if (result.ok && Array.isArray(result.records)) {
-        // Map Sheet column headers → friendly field names used by render functions
-        const mapped = result.records.map(row => mapSheetRow(type, row));
-        onSuccess(mapped);
-      } else {
-        console.warn("GAS getAll error:", result.error);
-        onSuccess([]);
-      }
-    })
-    .catch(err => {
-      console.warn("fetchFromGAS failed for " + type + ":", err.message);
+  // Uses script-tag JSONP — the only reliable CORS-free method from GitHub Pages
+  const cbName = "gasCB_" + type + "_" + Date.now();
+  const url    = GAS_URL + "?action=getAll&type=" + type + "&callback=" + cbName;
+
+  const listId = type === "fault" ? "fault-reports-list"
+               : type === "install" ? "install-list" : "equip-list";
+
+  // Timeout safety net — show error if no response within 15s
+  const timer = setTimeout(function() {
+    delete window[cbName];
+    const el = document.getElementById(listId);
+    if (el) el.innerHTML = '<div class="empty-state" style="color:var(--red);">⚠️ Could not reach Google Sheets. Check GAS_URL and redeploy.</div>';
+  }, 15000);
+
+  window[cbName] = function(result) {
+    clearTimeout(timer);
+    delete window[cbName];
+    const old = document.getElementById("gs-tag-" + type);
+    if (old) old.remove();
+    if (result && result.ok && Array.isArray(result.records)) {
+      onSuccess(result.records.map(function(row){ return mapSheetRow(type, row); }));
+    } else {
+      console.warn("GAS getAll error for", type, result);
       onSuccess([]);
-    });
+    }
+  };
+
+  const script = document.createElement("script");
+  script.id    = "gs-tag-" + type;
+  script.src   = url;
+  script.onerror = function() {
+    clearTimeout(timer);
+    delete window[cbName];
+    console.warn("Script tag failed for:", type);
+    onSuccess([]);
+  };
+  document.body.appendChild(script);
 }
 
 // Maps raw Google Sheet column headers to the field names the render functions expect
@@ -1129,22 +1150,44 @@ function pingGAS() {
 setTimeout(pingGAS, 800);
 
 // ─────────────────────────────────────────────────
+// OPEN GOOGLE SHEET DIRECTLY
+// ─────────────────────────────────────────────────
+function openGoogleSheet() {
+  var sheetId = "";
+  // Extract sheet ID from GAS URL if possible, or use stored ID
+  // Admin must set SHEET_ID below to match their Google Sheet
+  var SHEET_ID = "1kFbir8GNGqDWVSgJpy6vxZfBpUKI-3rIoFZ3ytpeyeA"; // ← same ID as in Code.gs
+  if (SHEET_ID && SHEET_ID !== "PASTE_YOUR_SPREADSHEET_ID_HERE") {
+    window.open("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/edit", "_blank");
+  } else {
+    alert("To enable this button, open CEU_Dashboard.html in a text editor and replace\n\nPASTE_YOUR_SPREADSHEET_ID_HERE\n\nin the openGoogleSheet() function with your actual Google Sheet ID.");
+  }
+}
+
+// ─────────────────────────────────────────────────
 // ADMIN: STATS (driven by live faultReports array)
 // ─────────────────────────────────────────────────
-function renderStats() {
-  const total    = faultReports.length;
-  const received = faultReports.filter(r => r.status === "Received"         || r.status === "received").length;
-  const repair   = faultReports.filter(r => r.status === "Under Repair"     || r.status === "under_repair").length;
-  const done     = faultReports.filter(r => r.status === "Repair Completed" || r.status === "repair_completed").length;
-  const obsolete = faultReports.filter(r => r.status === "Obsolete"         || r.status === "obsolete").length;
+function normaliseStatus(s) {
+  return (s || "").toLowerCase().replace(/ /g, "_");
+}
 
-  document.getElementById("stats-grid").innerHTML = `
-    <div class="stat-card s-blue"><span class="stat-num">${total}</span><span class="stat-lbl">Total Reports</span></div>
-    <div class="stat-card s-green"><span class="stat-num">${received}</span><span class="stat-lbl">Received</span></div>
-    <div class="stat-card s-amber"><span class="stat-num">${repair}</span><span class="stat-lbl">Under Repair</span></div>
-    <div class="stat-card s-teal"><span class="stat-num">${done}</span><span class="stat-lbl">Completed</span></div>
-    <div class="stat-card s-red"><span class="stat-num">${obsolete}</span><span class="stat-lbl">Obsolete</span></div>
-  `;
+function renderStats() {
+  const total      = faultReports.length;
+  const received   = faultReports.filter(r => normaliseStatus(r.status) === "received").length;
+  const pending    = faultReports.filter(r => normaliseStatus(r.status) === "pending").length;
+  const repair     = faultReports.filter(r => normaliseStatus(r.status) === "under_repair").length;
+  const done       = faultReports.filter(r => normaliseStatus(r.status) === "repair_completed").length;
+  const dispatched = faultReports.filter(r => normaliseStatus(r.status) === "dispatched").length;
+  const obsolete   = faultReports.filter(r => normaliseStatus(r.status) === "obsolete").length;
+
+  document.getElementById("stats-grid").innerHTML =
+    '<div class="stat-card s-blue"><span class="stat-num">'  + total      + '</span><span class="stat-lbl">Total Reports</span></div>' +
+    '<div class="stat-card s-green"><span class="stat-num">' + received   + '</span><span class="stat-lbl">Received</span></div>' +
+    '<div class="stat-card s-amber"><span class="stat-num">' + pending    + '</span><span class="stat-lbl">Pending</span></div>' +
+    '<div class="stat-card s-amber"><span class="stat-num">' + repair     + '</span><span class="stat-lbl">Under Repair</span></div>' +
+    '<div class="stat-card s-teal"><span class="stat-num">'  + done       + '</span><span class="stat-lbl">Completed</span></div>' +
+    '<div class="stat-card s-blue"><span class="stat-num">'  + dispatched + '</span><span class="stat-lbl">Dispatched</span></div>' +
+    '<div class="stat-card s-red"><span class="stat-num">'   + obsolete   + '</span><span class="stat-lbl">Obsolete</span></div>';
 }
 
 // ─────────────────────────────────────────────────
@@ -1176,9 +1219,7 @@ function renderFaultList() {
 }
 
 function buildStepperHTML(ref, currentStatus) {
-  // Normalise status — Sheet stores "Received", HTML uses "received"
-  const normalise = s => (s || "").toLowerCase().replace(/ /g, "_");
-  const currentIdx = STATUS_STEPS.findIndex(s => s.key === normalise(currentStatus));
+  const currentIdx = STATUS_STEPS.findIndex(s => s.key === normaliseStatus(currentStatus));
   return STATUS_STEPS.map((s, i) => {
     const isDone   = i < currentIdx;
     const isActive = i === currentIdx;
