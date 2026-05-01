@@ -1253,7 +1253,7 @@ function sendToGAS(data, action) {
 function pingGAS() {
   const indicator = document.getElementById("gas-status");
   if (!indicator) return;
-  if (GAS_URL.includes("YOUR_SCRIPT_ID")) {
+  if (GAS_URL.includes("https://script.google.com/home/projects/1dIHwgSlFUtReD7zOCvmJssANxtYLbALyOc1wqCgzhNqaB8CLyifQI9uS/edit")) {
     indicator.textContent = "⚠️ GAS URL not set";
     indicator.style.color = "#b7770d";
     return;
