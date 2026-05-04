@@ -3,719 +3,580 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Regional Clinical Engineering Equipment Management</title>
+<title>Clinical Engineering Equipment Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#eef2f7;--surface:#fff;--surface2:#f4f7fb;--border:#d9e2ef;
+  --primary:#1b4f72;--pl:#2471a3;--pf:#d6eaf8;
+  --accent:#117a65;--al:#1abc9c;--af:#d0ece7;
+  --amber:#b7770d;--amberbg:#fef9e7;
+  --red:#c0392b;--redbg:#fdf0ef;
+  --text:#1a202c;--text2:#4a5568;--text3:#718096;
+  --radius:12px;--shadow:0 2px 14px rgba(0,0,0,.07);--shadowlg:0 8px 32px rgba(0,0,0,.13)
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-  :root {
-    --bg: #eef2f7;
-    --surface: #ffffff;
-    --surface2: #f4f7fb;
-    --border: #d9e2ef;
-    --primary: #1b4f72;
-    --primary-light: #2471a3;
-    --primary-faint: #d6eaf8;
-    --accent: #117a65;
-    --accent-light: #1abc9c;
-    --accent-faint: #d0ece7;
-    --amber: #b7770d;
-    --amber-bg: #fef9e7;
-    --red: #c0392b;
-    --red-bg: #fdf0ef;
-    --text: #1a202c;
-    --text2: #4a5568;
-    --text3: #718096;
-    --radius: 12px;
-    --shadow: 0 2px 14px rgba(0,0,0,0.07);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.13);
-  }
+/* HEADER */
+.app-header{background:linear-gradient(135deg,#1b4f72 0%,#117a65 100%);color:#fff;padding:1.1rem 1.5rem;box-shadow:0 4px 20px rgba(27,79,114,.35)}
+.header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:1rem}
+.header-logo{font-size:2rem;flex-shrink:0}
+.header-title{font-size:clamp(.92rem,3vw,1.25rem);font-weight:800;line-height:1.25}
+.header-sub{font-size:.73rem;opacity:.78;margin-top:3px}
+#gas-status{font-size:.68rem;white-space:nowrap;opacity:.88;padding:.25rem .6rem;border-radius:999px;background:rgba(255,255,255,.15);flex-shrink:0}
+#offline-banner{display:none;background:#c0392b;color:#fff;text-align:center;padding:.5rem;font-size:.82rem;font-weight:600}
 
-  body {
-    font-family: 'Outfit', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+/* NAV */
+.tab-nav{background:var(--primary);border-bottom:3px solid var(--al);position:sticky;top:0;z-index:100}
+.tab-nav-inner{max-width:960px;margin:0 auto;display:flex;overflow-x:auto;scrollbar-width:none}
+.tab-nav-inner::-webkit-scrollbar{display:none}
+.tab-btn{padding:.78rem 1.1rem;border:none;background:none;color:rgba(255,255,255,.6);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-3px;transition:all .2s}
+.tab-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+.tab-btn.active{color:#fff;border-bottom-color:var(--al);background:rgba(255,255,255,.1)}
 
-  /* ── HEADER ── */
-  .app-header {
-    background: linear-gradient(135deg, #1b4f72 0%, #117a65 100%);
-    color: white;
-    padding: 1.1rem 1.5rem;
-    box-shadow: 0 4px 20px rgba(27,79,114,0.35);
-  }
-  .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 1rem; }
-  .header-logo { font-size: 2.1rem; }
-  .header-title { font-size: clamp(0.95rem, 3vw, 1.3rem); font-weight: 800; letter-spacing: -0.2px; line-height: 1.25; }
-  .header-sub { font-size: 0.75rem; opacity: 0.78; margin-top: 3px; }
+/* BODY */
+.app-body{max-width:960px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.panel{display:none;animation:fadeIn .28s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
-  /* ── TAB NAV ── */
-  .tab-nav { background: var(--primary); border-bottom: 3px solid var(--accent-light); position: sticky; top: 0; z-index: 100; }
-  .tab-nav-inner { max-width: 960px; margin: 0 auto; display: flex; overflow-x: auto; scrollbar-width: none; }
-  .tab-nav-inner::-webkit-scrollbar { display: none; }
-  .tab-btn {
-    padding: 0.8rem 1.15rem; border: none; background: none;
-    color: rgba(255,255,255,0.6); cursor: pointer;
-    font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 600;
-    display: flex; align-items: center; gap: 6px; white-space: nowrap;
-    border-bottom: 3px solid transparent; margin-bottom: -3px;
-    transition: all 0.2s;
-  }
-  .tab-btn:hover { color: white; background: rgba(255,255,255,0.08); }
-  .tab-btn.active { color: white; border-bottom-color: var(--accent-light); background: rgba(255,255,255,0.1); }
+/* SECTION HEADER */
+.section-header{display:flex;align-items:flex-start;gap:.9rem;margin-bottom:1.1rem}
+.section-icon{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.icon-fault{background:#fdebd0}.icon-install{background:var(--pf)}.icon-equip{background:var(--af)}.icon-admin{background:#ebe8fd}
+.section-title{font-size:1.2rem;font-weight:800;color:var(--primary)}
+.section-sub{font-size:.8rem;color:var(--text2);margin-top:3px}
 
-  /* ── BODY / PANELS ── */
-  .app-body { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-  .panel { display: none; animation: fadeIn 0.28s ease; }
-  .panel.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+/* BANNERS */
+.banner{padding:.8rem 1rem;border-radius:0 8px 8px 0;font-size:.82rem;margin-bottom:1.1rem;border-left:4px solid}
+.banner-blue{background:var(--pf);border-color:var(--pl);color:var(--primary)}
+.banner-green{background:var(--af);border-color:var(--accent);color:#0e6655}
 
-  /* ── SECTION HEADER ── */
-  .section-header { display: flex; align-items: flex-start; gap: 0.9rem; margin-bottom: 1.1rem; }
-  .section-icon { width: 46px; height: 46px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
-  .icon-fault { background: #fdebd0; }
-  .icon-install { background: var(--primary-faint); }
-  .icon-equip { background: var(--accent-faint); }
-  .icon-admin { background: #ebe8fd; }
-  .section-title { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
-  .section-sub { font-size: 0.8rem; color: var(--text2); margin-top: 3px; }
+/* FORM CARD */
+.form-card{background:var(--surface);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:1.5rem}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1rem;margin-bottom:1rem}
+.field-group{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:.8rem;font-weight:700;color:var(--text2)}
+.field-hint{font-size:.73rem;color:var(--text3)}
+.req{color:var(--red)}
+input,select,textarea{border:1.5px solid var(--border);border-radius:8px;padding:.58rem .82rem;font-size:.87rem;font-family:'Outfit',sans-serif;background:var(--surface2);color:var(--text);width:100%;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pl);box-shadow:0 0 0 3px var(--pf)}
+input.err,select.err,textarea.err{border-color:var(--red)}
+textarea{resize:vertical;min-height:100px}
+.err-msg{font-size:.73rem;color:var(--red)}
+.char-count{font-size:.7rem;color:var(--text3);text-align:right}
 
-  /* ── BANNER ── */
-  .banner {
-    padding: 0.8rem 1rem; border-radius: 0 8px 8px 0;
-    font-size: 0.82rem; margin-bottom: 1.1rem;
-    border-left: 4px solid;
-  }
-  .banner-blue { background: var(--primary-faint); border-color: var(--primary-light); color: var(--primary); }
-  .banner-green { background: var(--accent-faint); border-color: var(--accent); color: #0e6655; }
+/* FILE UPLOAD */
+.file-area{display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-top:.25rem}
+.file-label{display:inline-flex;align-items:center;gap:6px;background:var(--pf);color:var(--primary);border:1.5px dashed var(--pl);border-radius:8px;padding:.5rem 1rem;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .2s}
+.file-label:hover{background:#bed8f0}
+#img-preview{width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--border);display:none}
 
-  /* ── FORM CARD ── */
-  .form-card { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 1.5rem; }
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-  .field-group { display: flex; flex-direction: column; gap: 5px; }
-  .field-label { font-size: 0.8rem; font-weight: 700; color: var(--text2); }
-  .field-hint { font-size: 0.73rem; color: var(--text3); }
-  .req { color: var(--red); }
+/* BUTTONS */
+.form-footer{display:flex;justify-content:flex-end;margin-top:1.25rem}
+.btn-primary{background:linear-gradient(135deg,var(--primary) 0%,var(--pl) 100%);color:#fff;border:none;border-radius:10px;padding:.72rem 1.9rem;font-size:.88rem;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;box-shadow:0 4px 12px rgba(27,79,114,.3);transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(27,79,114,.4)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-primary.green{background:linear-gradient(135deg,#0e6655 0%,var(--accent) 100%);box-shadow:0 4px 12px rgba(17,122,101,.3)}
+.btn-outline{background:transparent;border:2px solid var(--primary);color:var(--primary);border-radius:8px;padding:.52rem 1.05rem;font-size:.8rem;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:background .2s}
+.btn-outline:hover{background:var(--pf)}
+.btn-sm{padding:.35rem .75rem;font-size:.73rem}
+.spinner{display:inline-block;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  input, select, textarea {
-    border: 1.5px solid var(--border); border-radius: 8px;
-    padding: 0.58rem 0.82rem; font-size: 0.87rem;
-    font-family: 'Outfit', sans-serif; background: var(--surface2);
-    color: var(--text); width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  input:focus, select:focus, textarea:focus {
-    outline: none; border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px var(--primary-faint);
-  }
-  input.err, select.err, textarea.err { border-color: var(--red); }
-  textarea { resize: vertical; min-height: 100px; }
-  .err-msg { font-size: 0.73rem; color: var(--red); }
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);align-items:center;justify-content:center;z-index:999;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal-card{background:#fff;border-radius:16px;padding:2rem;max-width:420px;width:100%;box-shadow:var(--shadowlg);text-align:center;animation:slideUp .28s ease}
+@keyframes slideUp{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
+.modal-icon{font-size:2.8rem;margin-bottom:.4rem}
+.modal-title{font-size:1.25rem;font-weight:800;color:var(--accent);margin-bottom:.4rem}
+.modal-body{font-size:.83rem;color:var(--text2);margin-bottom:1rem}
+.modal-ref{background:var(--surface2);border-radius:8px;padding:.7rem;margin-bottom:1rem}
+.ref-label{display:block;font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.ref-code{display:block;font-family:'Space Mono',monospace;font-size:.95rem;font-weight:700;color:var(--primary);margin-top:2px;cursor:pointer;text-decoration:underline dotted}
+.ref-copy-tip{font-size:.7rem;color:var(--text3);margin-top:2px}
+.modal-q{font-size:.86rem;font-weight:600;margin-bottom:.85rem}
+.modal-btns{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
 
-  /* ── FILE UPLOAD ── */
-  .file-area { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; margin-top: 0.25rem; }
-  .file-label {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--primary-faint); color: var(--primary);
-    border: 1.5px dashed var(--primary-light); border-radius: 8px;
-    padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; cursor: pointer;
-    transition: background 0.2s;
-  }
-  .file-label:hover { background: #bed8f0; }
-  #img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); display: none; }
+/* ERROR MODAL */
+.error-modal-card{background:#fff;border-radius:16px;padding:1.75rem;max-width:380px;width:100%;box-shadow:var(--shadowlg);text-align:center}
+.error-modal-icon{font-size:2.5rem;margin-bottom:.4rem}
+.error-modal-title{font-size:1rem;font-weight:800;color:var(--red);margin-bottom:.5rem}
+.error-modal-body{font-size:.83rem;color:var(--text2);margin-bottom:1.1rem}
 
-  /* ── FORM FOOTER ── */
-  .form-footer { display: flex; justify-content: flex-end; margin-top: 1.25rem; }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    color: white; border: none; border-radius: 10px; padding: 0.72rem 1.9rem;
-    font-size: 0.88rem; font-weight: 700; font-family: 'Outfit', sans-serif;
-    cursor: pointer; box-shadow: 0 4px 12px rgba(27,79,114,0.3);
-    transition: all 0.2s;
-  }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(27,79,114,0.4); }
-  .btn-primary.green { background: linear-gradient(135deg, #0e6655 0%, var(--accent) 100%); box-shadow: 0 4px 12px rgba(17,122,101,0.3); }
-  .btn-primary.green:hover { box-shadow: 0 6px 16px rgba(17,122,101,0.4); }
-  .btn-outline {
-    background: transparent; border: 2px solid var(--primary); color: var(--primary);
-    border-radius: 8px; padding: 0.55rem 1.1rem; font-size: 0.82rem; font-weight: 700;
-    font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.2s;
-  }
-  .btn-outline:hover { background: var(--primary-faint); }
-  .btn-sm { padding: 0.38rem 0.8rem; font-size: 0.75rem; }
+/* ADMIN */
+.login-wrap{display:flex;justify-content:center;padding:2rem 0}
+.login-card{background:var(--surface);border-radius:var(--radius);padding:2rem;width:100%;max-width:350px;box-shadow:var(--shadowlg);border:1px solid var(--border);text-align:center}
+.login-icon{font-size:2.8rem;margin-bottom:.4rem}
+.login-title{font-size:1.15rem;font-weight:800;color:var(--primary)}
+.login-sub{font-size:.75rem;color:var(--text3);margin-bottom:1.2rem}
+.login-card input{text-align:center;letter-spacing:.15em}
+.admin-panel{display:none}
+.admin-panel.open{display:block}
+.admin-header-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.1rem;flex-wrap:wrap;gap:.5rem}
+.session-timer{font-size:.72rem;color:var(--amber);font-weight:600;margin-top:3px}
+.admin-tabs{display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.atab-btn{padding:.5rem 1rem;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--text2);transition:all .18s}
+.atab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.52);
-    align-items: center; justify-content: center; z-index: 999; padding: 1rem;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal-card {
-    background: white; border-radius: 16px; padding: 2rem;
-    max-width: 400px; width: 100%; box-shadow: var(--shadow-lg);
-    text-align: center; animation: slideUp 0.28s ease;
-  }
-  @keyframes slideUp { from { transform: translateY(18px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .modal-icon { font-size: 2.8rem; margin-bottom: 0.4rem; }
-  .modal-title { font-size: 1.25rem; font-weight: 800; color: var(--accent); margin-bottom: 0.4rem; }
-  .modal-body { font-size: 0.83rem; color: var(--text2); margin-bottom: 1rem; }
-  .modal-ref { background: var(--surface2); border-radius: 8px; padding: 0.7rem; margin-bottom: 1rem; }
-  .ref-label { display: block; font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
-  .ref-code { display: block; font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-top: 2px; }
-  .modal-q { font-size: 0.86rem; font-weight: 600; margin-bottom: 0.85rem; }
-  .modal-btns { display: flex; gap: 0.7rem; justify-content: center; flex-wrap: wrap; }
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.7rem;margin-bottom:1.25rem}
+.stat-card{border-radius:10px;padding:.9rem;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:var(--shadow)}
+.stat-num{font-size:1.75rem;font-weight:800;line-height:1}
+.stat-lbl{font-size:.68rem;color:var(--text2);font-weight:600;text-align:center}
+.s-blue{background:var(--pf)}.s-blue .stat-num{color:var(--primary)}
+.s-green{background:#d5f5e3}.s-green .stat-num{color:#1e8449}
+.s-amber{background:var(--amberbg)}.s-amber .stat-num{color:var(--amber)}
+.s-teal{background:var(--af)}.s-teal .stat-num{color:var(--accent)}
+.s-red{background:var(--redbg)}.s-red .stat-num{color:var(--red)}
+.s-purple{background:#ebe8fd}.s-purple .stat-num{color:#6c3483}
 
-  /* ── ADMIN LOGIN ── */
-  .login-wrap { display: flex; justify-content: center; padding: 2rem 0; }
-  .login-card { background: var(--surface); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 350px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); text-align: center; }
-  .login-icon { font-size: 2.8rem; margin-bottom: 0.4rem; }
-  .login-title { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
-  .login-sub { font-size: 0.75rem; color: var(--text3); margin-bottom: 1.2rem; }
-  .login-card input { text-align: center; letter-spacing: 0.15em; }
+/* REPORT CARDS */
+.report-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:1.1rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.report-meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:.5rem}
+.report-ref{font-family:'Space Mono',monospace;font-size:.75rem;background:var(--pf);color:var(--primary);padding:2px 8px;border-radius:4px;font-weight:700}
+.report-time{font-size:.7rem;color:var(--text3)}
+.report-name{font-weight:700;font-size:.88rem;margin-bottom:3px}
+.report-detail{font-size:.78rem;color:var(--text2);margin-bottom:2px}
+.report-contact{font-size:.74rem;color:var(--text3)}
 
-  /* ── ADMIN PANEL ── */
-  .admin-panel { display: none; }
-  .admin-panel.open { display: block; }
+/* STATUS STEPPER */
+.status-stepper{margin-top:1rem}
+.stepper-label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.55rem}
+.stepper-steps{display:flex;flex-wrap:wrap;gap:.4rem}
+.step-pill{display:flex;align-items:center;gap:5px;padding:.35rem .7rem;border-radius:999px;border:2px solid var(--border);background:var(--surface2);font-size:.73rem;font-weight:600;cursor:pointer;color:var(--text3);transition:all .18s;font-family:'Outfit',sans-serif}
+.step-pill:hover{border-color:var(--pl);color:var(--pl)}
+.step-pill.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.step-pill.done{background:var(--af);border-color:var(--accent);color:var(--accent)}
+.step-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
 
-  .admin-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-  .atab-btn {
-    padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid var(--border);
-    background: var(--surface); font-family: 'Outfit', sans-serif; font-size: 0.8rem;
-    font-weight: 600; cursor: pointer; color: var(--text2); transition: all 0.18s;
-  }
-  .atab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+/* DISTRICT MANAGER */
+.district-manager{background:var(--surface);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:1.25rem}
+.dm-title{font-size:.9rem;font-weight:700;color:var(--primary);margin-bottom:.85rem}
+.dm-list{list-style:none;margin-bottom:1rem;max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
+.dm-list li{display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;font-size:.83rem;border-bottom:1px solid var(--border)}
+.dm-list li:last-child{border-bottom:none}
+.dm-list li:nth-child(even){background:var(--surface2)}
+.dm-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;padding:0 4px;line-height:1}
+.dm-add-row{display:flex;gap:.6rem}
+.dm-add-row input{flex:1}
+.dm-save-row{margin-top:.75rem;display:flex;align-items:center;gap:.75rem}
+.dm-save-status{font-size:.75rem;color:var(--accent);font-weight:600}
 
-  /* ── DISTRICT MANAGER ── */
-  .district-manager { background: var(--surface); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 1.25rem; }
-  .dm-title { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 0.85rem; }
-  .dm-list { list-style: none; margin-bottom: 1rem; max-height: 240px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
-  .dm-list li { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.85rem; font-size: 0.83rem; border-bottom: 1px solid var(--border); }
-  .dm-list li:last-child { border-bottom: none; }
-  .dm-list li:nth-child(even) { background: var(--surface2); }
-  .dm-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; padding: 0 4px; line-height: 1; }
-  .dm-add-row { display: flex; gap: 0.6rem; }
-  .dm-add-row input { flex: 1; }
+/* STATUS TRACKER (public) */
+.tracker-card{background:var(--surface);border-radius:var(--radius);padding:1.4rem;box-shadow:var(--shadow);border:1px solid var(--border);margin-top:1.5rem}
+.tracker-header{display:flex;align-items:flex-start;gap:.85rem;margin-bottom:1.25rem}
+.tracker-icon{font-size:1.5rem;width:42px;height:42px;background:#eef2f7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tracker-title{font-size:1rem;font-weight:800;color:var(--primary)}
+.tracker-sub{font-size:.77rem;color:var(--text3);margin-top:3px}
+.tracker-input-row{display:flex;gap:.65rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.tracker-input-row input{flex:1;min-width:180px;font-family:'Space Mono',monospace;font-size:.88rem;letter-spacing:.06em;text-transform:uppercase}
+.track-state{text-align:center;padding:1.5rem;color:var(--text2)}
+.track-spinner{font-size:2rem;animation:spin 1.2s linear infinite;display:inline-block}
+.track-error{color:var(--red)}
+.track-info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:.75rem;margin-bottom:1.25rem}
+.track-info-item{background:var(--surface2);border-radius:8px;padding:.65rem .85rem;border:1px solid var(--border)}
+.track-info-label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:3px}
+.track-info-value{display:block;font-size:.85rem;font-weight:600;color:var(--text)}
+.track-info-value.mono{font-family:'Space Mono',monospace;color:var(--primary)}
+.status-progress-wrap{margin-bottom:1rem}
+.status-progress-label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem}
+.status-progress-steps{display:flex;flex-wrap:wrap;gap:.35rem}
+.sp-step{display:flex;align-items:center;gap:5px;padding:.35rem .7rem;border-radius:999px;border:2px solid var(--border);background:var(--surface2);font-size:.72rem;font-weight:600;color:var(--text3)}
+.sp-step.sp-done{background:var(--af);border-color:var(--accent);color:var(--accent)}
+.sp-step.sp-active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:800}
+.sp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.current-status-wrap{text-align:center;margin-top:.75rem}
+.current-status-badge{display:inline-block;padding:.5rem 1.5rem;border-radius:999px;font-size:.88rem;font-weight:800;letter-spacing:.03em}
+.badge-received{background:#d6eaf8;color:#1b4f72}
+.badge-pending{background:var(--amberbg);color:var(--amber)}
+.badge-under_repair,.badge-under\ repair{background:#fdebd0;color:#a04000}
+.badge-repair_completed,.badge-repair\ completed{background:var(--af);color:var(--accent)}
+.badge-dispatched{background:#e8daef;color:#6c3483}
+.badge-obsolete{background:var(--redbg);color:var(--red)}
 
-  /* ── STATUS TRACKER (admin only) ── */
-  .report-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.1rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
-  .report-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 0.5rem; }
-  .report-ref { font-family: 'Space Mono', monospace; font-size: 0.75rem; background: var(--primary-faint); color: var(--primary); padding: 2px 8px; border-radius: 4px; font-weight: 700; }
-  .report-time { font-size: 0.7rem; color: var(--text3); }
-  .report-name { font-weight: 700; font-size: 0.88rem; margin-bottom: 3px; }
-  .report-detail { font-size: 0.78rem; color: var(--text2); margin-bottom: 2px; }
-  .report-contact { font-size: 0.74rem; color: var(--text3); }
-  .report-img { width: 100%; max-width: 180px; border-radius: 8px; margin-top: 8px; border: 1px solid var(--border); display: none; }
+.empty-state{text-align:center;padding:3rem;color:var(--text3);font-size:.88rem}
+.app-footer{text-align:center;padding:1.25rem 1rem;font-size:.7rem;color:var(--text3);border-top:1px solid var(--border);margin-top:1rem}
 
-  /* Status stepper */
-  .status-stepper { margin-top: 1rem; }
-  .stepper-label { font-size: 0.75rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.6rem; }
-  .stepper-steps { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .step-pill {
-    display: flex; align-items: center; gap: 5px;
-    padding: 0.38rem 0.75rem; border-radius: 999px;
-    border: 2px solid var(--border); background: var(--surface2);
-    font-size: 0.75rem; font-weight: 600; cursor: pointer; color: var(--text3);
-    transition: all 0.18s;
-  }
-  .step-pill:hover { border-color: var(--primary-light); color: var(--primary-light); }
-  .step-pill.active { background: var(--primary); border-color: var(--primary); color: white; }
-  .step-pill.done { background: var(--accent-faint); border-color: var(--accent); color: var(--accent); }
-  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-
-  /* ── STATS ── */
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.7rem; margin-bottom: 1.25rem; }
-  .stat-card { border-radius: 10px; padding: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 3px; box-shadow: var(--shadow); }
-  .stat-num { font-size: 1.75rem; font-weight: 800; line-height: 1; }
-  .stat-lbl { font-size: 0.69rem; color: var(--text2); font-weight: 600; text-align: center; }
-  .s-blue { background: var(--primary-faint); } .s-blue .stat-num { color: var(--primary); }
-  .s-green { background: #d5f5e3; } .s-green .stat-num { color: #1e8449; }
-  .s-amber { background: var(--amber-bg); } .s-amber .stat-num { color: var(--amber); }
-  .s-teal { background: var(--accent-faint); } .s-teal .stat-num { color: var(--accent); }
-  .s-red { background: var(--red-bg); } .s-red .stat-num { color: var(--red); }
-
-  .empty-state { text-align: center; padding: 3rem; color: var(--text3); font-size: 0.88rem; }
-
-  /* ── FOOTER ── */
-  .app-footer { text-align: center; padding: 1.25rem 1rem; font-size: 0.7rem; color: var(--text3); border-top: 1px solid var(--border); margin-top: 1rem; }
-
-  /* ── RESPONSIVE ── */
-  /* ── PUBLIC STATUS TRACKER ── */
-  .tracker-card {
-    background: var(--surface); border-radius: var(--radius);
-    padding: 1.4rem; box-shadow: var(--shadow); border: 1px solid var(--border);
-    margin-top: 1.5rem;
-  }
-  .tracker-header { display:flex; align-items:flex-start; gap:0.85rem; margin-bottom:1.25rem; }
-  .tracker-icon { font-size:1.6rem; width:42px; height:42px; background:#eef2f7; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .tracker-title { font-size:1rem; font-weight:800; color:var(--primary); }
-  .tracker-sub { font-size:0.77rem; color:var(--text3); margin-top:3px; }
-
-  .tracker-input-row { display:flex; gap:0.65rem; margin-bottom:1.1rem; flex-wrap:wrap; }
-  .tracker-input-row input { flex:1; min-width:180px; font-family:'Space Mono',monospace; font-size:0.88rem; letter-spacing:0.06em; text-transform:uppercase; }
-  .tracker-input-row .btn-primary { white-space:nowrap; padding:0.6rem 1.25rem; }
-
-  .track-state { text-align:center; padding:1.5rem; color:var(--text2); }
-  .track-spinner { font-size:2rem; animation:spin 1.2s linear infinite; display:inline-block; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  .track-error { color:var(--red); }
-
-  .track-info-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.75rem; margin-bottom:1.25rem; }
-  .track-info-item { background:var(--surface2); border-radius:8px; padding:0.65rem 0.85rem; border:1px solid var(--border); }
-  .track-info-label { display:block; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text3); margin-bottom:3px; }
-  .track-info-value { display:block; font-size:0.85rem; font-weight:600; color:var(--text); }
-  .track-info-value.mono { font-family:'Space Mono',monospace; color:var(--primary); }
-
-  .status-progress-wrap { margin-bottom:1rem; }
-  .status-progress-label { font-size:0.72rem; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.6rem; }
-  .status-progress-steps { display:flex; flex-wrap:wrap; gap:0.35rem; }
-  .sp-step {
-    display:flex; align-items:center; gap:5px;
-    padding:0.35rem 0.7rem; border-radius:999px;
-    border:2px solid var(--border); background:var(--surface2);
-    font-size:0.72rem; font-weight:600; color:var(--text3);
-  }
-  .sp-step.sp-done { background:var(--accent-faint); border-color:var(--accent); color:var(--accent); }
-  .sp-step.sp-active { background:var(--primary); border-color:var(--primary); color:white; font-weight:800; }
-  .sp-dot { width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
-
-  .current-status-wrap { text-align:center; margin-top:0.75rem; }
-  .current-status-badge {
-    display:inline-block; padding:0.5rem 1.5rem; border-radius:999px;
-    font-size:0.88rem; font-weight:800; letter-spacing:0.03em;
-  }
-  .badge-received   { background:#d6eaf8; color:#1b4f72; }
-  .badge-pending    { background:#fef9e7; color:#b7770d; }
-  .badge-under_repair { background:#fdebd0; color:#a04000; }
-  .badge-repair_completed { background:#d0ece7; color:#117a65; }
-  .badge-dispatched { background:#e8daef; color:#6c3483; }
-  .badge-obsolete   { background:#fdf0ef; color:#c0392b; }
-
-  @media (max-width: 480px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .stats-grid { grid-template-columns: repeat(2,1fr); }
-    .form-footer { justify-content: stretch; }
-    .btn-primary { width: 100%; }
-    .stepper-steps { gap: 0.28rem; }
-    .step-pill { font-size: 0.68rem; padding: 0.3rem 0.55rem; }
-  }
+@media(max-width:480px){
+  .form-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .form-footer{justify-content:stretch}
+  .btn-primary{width:100%}
+  .stepper-steps{gap:.28rem}
+  .step-pill{font-size:.67rem;padding:.28rem .5rem}
+  .tracker-input-row .btn-primary{width:100%}
+}
 </style>
 </head>
 <body>
 
-<!-- ════════════ HEADER ════════════ -->
+<div id="offline-banner">⚠️ You are offline. Please check your internet connection before submitting forms.</div>
+
 <header class="app-header">
   <div class="header-inner">
     <div class="header-logo">🏥</div>
-    <div style="flex:1;">
-      <div class="header-title">Medical Equipment Management Dashboard</div>
-      <div class="header-sub">Clinical Engineering Unit, Western Region Health Directorate</div>
+    <div style="flex:1">
+      <div class="header-title">Medical Equipment Dashboard</div>
+      <div class="header-sub">Clinical Engineering Unit, Western Region Health Directorate, Ghana</div>
     </div>
-    <div id="gas-status" style="font-size:0.7rem;white-space:nowrap;opacity:0.85;">⏳ Connecting…</div>
+    <div id="gas-status">⏳ Connecting…</div>
   </div>
 </header>
 
-<!-- ════════════ TAB NAV ════════════ -->
 <nav class="tab-nav">
   <div class="tab-nav-inner">
-    <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Report</button>
+    <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Reporting</button>
     <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation Request</button>
     <button class="tab-btn" onclick="showTab('equip',this)">🏥 Equipment Request</button>
     <button class="tab-btn" onclick="showTab('admin',this)">🔐 Admin</button>
   </div>
 </nav>
 
-<!-- ════════════ BODY ════════════ -->
 <div class="app-body">
 
-  <!-- ══ TAB 1: FAULT REPORTING ══ -->
-  <div id="panel-fault" class="panel active">
-    <div class="section-header">
-      <div class="section-icon icon-fault">⚠️</div>
-      <div>
-        <div class="section-title">Medical Equipment Fault Reporting</div>
-        <div class="section-sub">Report equipment faults for assessment by the Clinical Engineering Unit</div>
-      </div>
+<!-- ══ TAB 1: FAULT REPORTING ══ -->
+<div id="panel-fault" class="panel active">
+  <div class="section-header">
+    <div class="section-icon icon-fault">⚠️</div>
+    <div>
+      <div class="section-title">Medical Equipment Fault Reporting</div>
+      <div class="section-sub">Report equipment faults for assessment by the Clinical Engineering Unit</div>
     </div>
-
-    <div class="form-card">
-      <div class="form-grid">
-        <div class="field-group">
-          <label class="field-label">Name of Facility <span class="req">*</span></label>
-          <input type="text" id="f-facility" placeholder="e.g. Effia Nkwanta Regional Hospital, Takoradi"/>
-          <span class="err-msg" id="err-f-facility"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">District <span class="req">*</span></label>
-          <select id="f-district">
-            <option value="">-- Select District --</option>
-          </select>
-          <span class="err-msg" id="err-f-district"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Type of Facility <span class="req">*</span></label>
-          <select id="f-ftype">
-            <option value="">-- Select Facility Type --</option>
-            <option>Teaching Hospital</option><option>Regional Hospital</option>
-            <option>District Hospital</option><option>Polyclinic</option>
-            <option>Health Centre</option><option>CHPS Compound</option>
-            <option>Private Hospital</option><option>Mission/Faith-Based Hospital</option>
-            <option>Quasi-Government</option><option>Clinic</option>
-          </select>
-          <span class="err-msg" id="err-f-ftype"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Unit / Department</label>
-          <input type="text" id="f-unit" placeholder="e.g. ICU, Theatre, Maternity Ward"/>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Name of Equipment <span class="req">*</span></label>
-          <input type="text" id="f-equip" placeholder="e.g. Portable Ventilator, ECG Machine"/>
-          <span class="err-msg" id="err-f-equip"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Name of Person Reporting <span class="req">*</span></label>
-          <input type="text" id="f-reporter" placeholder="Full name"/>
-          <span class="err-msg" id="err-f-reporter"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Contact Number <span class="req">*</span></label>
-          <p class="field-hint">We may contact you for further clarification</p>
-          <input type="tel" id="f-contact" placeholder="e.g. 0244000000"/>
-          <span class="err-msg" id="err-f-contact"></span>
-        </div>
-      </div>
-
-      <div class="field-group" style="margin-bottom:1rem;">
-        <label class="field-label">Description of Fault <span class="req">*</span></label>
-        <textarea id="f-desc" rows="4" placeholder="Describe the fault — when it started, observed symptoms, error messages, etc."></textarea>
-        <span class="err-msg" id="err-f-desc"></span>
-      </div>
-
-      <div class="field-group" style="margin-bottom:1rem;">
-        <label class="field-label">Other Remarks</label>
-        <textarea id="f-remarks" rows="3" placeholder="Any additional information you think is relevant"></textarea>
-      </div>
-
+  </div>
+  <div class="form-card">
+    <div class="form-grid">
       <div class="field-group">
-        <label class="field-label">Upload Picture of Equipment</label>
-        <p class="field-hint">Attach a clear photo showing the fault or equipment label</p>
-        <div class="file-area">
-          <label class="file-label" for="f-img">📷 Choose Image</label>
-          <input type="file" id="f-img" accept="image/*" style="display:none" onchange="previewImg(this,'img-preview')"/>
-          <img id="img-preview" alt="Preview"/>
-        </div>
+        <label class="field-label">Name of Facility <span class="req">*</span></label>
+        <input type="text" id="f-facility" maxlength="150" placeholder="e.g. Effia Nkwanta Regional Hospital"/>
+        <span class="err-msg" id="err-f-facility"></span>
       </div>
-
-      <div class="form-footer">
-        <button class="btn-primary" onclick="submitFault()">📤 Submit Fault Report</button>
+      <div class="field-group">
+        <label class="field-label">District <span class="req">*</span></label>
+        <select id="f-district"><option value="">-- Select District --</option></select>
+        <span class="err-msg" id="err-f-district"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Type of Facility <span class="req">*</span></label>
+        <select id="f-ftype">
+          <option value="">-- Select --</option>
+          <option>Teaching Hospital</option><option>Regional Hospital</option>
+          <option>District Hospital</option><option>Polyclinic</option>
+          <option>Health Centre</option><option>CHPS Compound</option>
+          <option>Private Hospital</option><option>Mission/Faith-Based Hospital</option>
+          <option>Maternity Home</option><option>Clinic</option>
+        </select>
+        <span class="err-msg" id="err-f-ftype"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Unit / Department</label>
+        <input type="text" id="f-unit" maxlength="100" placeholder="e.g. ICU, Theatre, Maternity Ward"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Name of Equipment <span class="req">*</span></label>
+        <input type="text" id="f-equip" maxlength="150" placeholder="e.g. Portable Ventilator, ECG Machine"/>
+        <span class="err-msg" id="err-f-equip"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Name of Person Reporting <span class="req">*</span></label>
+        <input type="text" id="f-reporter" maxlength="100" placeholder="Full name"/>
+        <span class="err-msg" id="err-f-reporter"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Contact Number <span class="req">*</span></label>
+        <p class="field-hint">10 digits · starts with 0 · digits only (e.g. 0244000000, 0201234567)</p>
+        <input type="tel" id="f-contact" maxlength="10" placeholder="e.g. 0244000000"
+          oninput="livePhoneInput('f-contact')" inputmode="numeric" pattern="[0-9]*"/>
+        <span class="err-msg" id="err-f-contact"></span>
       </div>
     </div>
-
-    <!-- ── STATUS TRACKER (public) ── -->
-    <div class="tracker-card">
-      <div class="tracker-header">
-        <div class="tracker-icon">🔍</div>
-        <div>
-          <div class="tracker-title">Track Your Fault Report Status</div>
-          <div class="tracker-sub">Enter your reference code to check the current status of your submitted fault report</div>
-        </div>
+    <div class="field-group" style="margin-bottom:1rem">
+      <label class="field-label">Description of Fault <span class="req">*</span></label>
+      <textarea id="f-desc" rows="4" maxlength="2000" oninput="updateCharCount('f-desc','f-desc-count',2000)" placeholder="Describe the fault — when it started, symptoms, error messages…"></textarea>
+      <div class="char-count"><span id="f-desc-count">0</span>/2000</div>
+      <span class="err-msg" id="err-f-desc"></span>
+    </div>
+    <div class="field-group" style="margin-bottom:1rem">
+      <label class="field-label">Other Remarks</label>
+      <textarea id="f-remarks" rows="3" maxlength="500" placeholder="Any additional information"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Upload Picture of Equipment</label>
+      <p class="field-hint">Attach a clear photo showing the fault or equipment label</p>
+      <div class="file-area">
+        <label class="file-label" for="f-img">📷 Choose Image</label>
+        <input type="file" id="f-img" accept="image/*" style="display:none" onchange="previewImg(this,'img-preview')"/>
+        <img id="img-preview" alt="Preview"/>
       </div>
-
-      <div class="tracker-input-row">
-        <input type="text" id="track-ref-input"
-          placeholder="e.g. FR-A3XK-7QPL"
-          oninput="this.value=this.value.toUpperCase()"
-          onkeydown="if(event.key==='Enter')checkStatus()"/>
-        <button class="btn-primary" onclick="checkStatus()" id="track-btn">🔎 Check Status</button>
-      </div>
-
-      <div id="track-result" style="display:none;">
-
-        <!-- Loading state -->
-        <div id="track-loading" style="display:none;" class="track-state">
-          <div class="track-spinner">⏳</div>
-          <p>Checking status from Google Sheets…</p>
-        </div>
-
-        <!-- Not found state -->
-        <div id="track-notfound" style="display:none;" class="track-state track-error">
-          <div style="font-size:2rem;">❌</div>
-          <p><strong>Reference code not found.</strong></p>
-          <p style="font-size:0.78rem;color:var(--text3);">Please check the code and try again. You can contact the Regional Equipment Manager on 0506971001. Reference codes look like <strong>FR-XXXX-XXXX</strong></p>
-        </div>
-
-        <!-- Found state -->
-        <div id="track-found" style="display:none;">
-          <div class="track-info-grid">
-            <div class="track-info-item">
-              <span class="track-info-label">Reference Code</span>
-              <span class="track-info-value mono" id="tr-ref"></span>
-            </div>
-            <div class="track-info-item">
-              <span class="track-info-label">Facility</span>
-              <span class="track-info-value" id="tr-facility"></span>
-            </div>
-            <div class="track-info-item">
-              <span class="track-info-label">Equipment</span>
-              <span class="track-info-value" id="tr-equipment"></span>
-            </div>
-            <div class="track-info-item">
-              <span class="track-info-label">Last Updated</span>
-              <span class="track-info-value" id="tr-updated"></span>
-            </div>
-          </div>
-
-          <!-- Status progress bar -->
-          <div class="status-progress-wrap">
-            <div class="status-progress-label">Current Status</div>
-            <div class="status-progress-steps" id="tr-steps"></div>
-          </div>
-
-          <!-- Current status badge -->
-          <div class="current-status-wrap">
-            <span class="current-status-badge" id="tr-badge"></span>
-          </div>
-        </div>
-
-      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" id="btn-fault" onclick="submitFault()">📤 Submit Fault Report</button>
     </div>
   </div>
 
-  <!-- ══ TAB 2: INSTALLATION REQUEST ══ -->
-  <div id="panel-install" class="panel">
-    <div class="section-header">
-      <div class="section-icon icon-install">🔩</div>
+  <!-- STATUS TRACKER (public) -->
+  <div class="tracker-card">
+    <div class="tracker-header">
+      <div class="tracker-icon">🔍</div>
       <div>
-        <div class="section-title">Request for Equipment Installation</div>
-        <div class="section-sub">Submit a request when your facility has received new equipment and requires user training and installation support</div>
+        <div class="tracker-title">Track Your Fault Report Status</div>
+        <div class="tracker-sub">Enter your reference code to check the current status of your submitted report</div>
       </div>
     </div>
-
-    <div class="banner banner-blue">
-      💡 <strong>Note:</strong> This form is for newly received equipment that requires professional installation and user training by the Clinical Engineering Unit.Contact us on 0506971001
+    <div class="tracker-input-row">
+      <input type="text" id="track-ref-input" placeholder="e.g. FR-A3XK-7QPL"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')checkStatus()"/>
+      <button class="btn-primary" onclick="checkStatus()" id="track-btn">🔎 Check Status</button>
     </div>
-
-    <div class="form-card">
-      <div class="form-grid">
-        <div class="field-group">
-          <label class="field-label">Name of Facility <span class="req">*</span></label>
-          <input type="text" id="i-facility" placeholder="e.g. Axim Government Hospital"/>
-          <span class="err-msg" id="err-i-facility"></span>
+    <div id="track-result" style="display:none">
+      <div id="track-loading" style="display:none" class="track-state">
+        <div class="track-spinner">⏳</div><p>Checking status…</p>
+      </div>
+      <div id="track-notfound" style="display:none" class="track-state track-error">
+        <div style="font-size:2rem">❌</div>
+        <p id="track-notfound-msg"><strong>Reference code not found.</strong></p>
+        <p style="font-size:.78rem;color:var(--text3);margin-top:4px">Codes look like <strong>FR-XXXX-XXXX</strong></p>
+      </div>
+      <div id="track-found" style="display:none">
+        <div class="track-info-grid">
+          <div class="track-info-item"><span class="track-info-label">Reference Code</span><span class="track-info-value mono" id="tr-ref"></span></div>
+          <div class="track-info-item"><span class="track-info-label">Facility</span><span class="track-info-value" id="tr-facility"></span></div>
+          <div class="track-info-item"><span class="track-info-label">Equipment</span><span class="track-info-value" id="tr-equipment"></span></div>
+          <div class="track-info-item"><span class="track-info-label">Last Updated</span><span class="track-info-value" id="tr-updated"></span></div>
         </div>
-        <div class="field-group">
-          <label class="field-label">District <span class="req">*</span></label>
-          <select id="i-district">
-            <option value="">-- Select District --</option>
-          </select>
-          <span class="err-msg" id="err-i-district"></span>
+        <div class="status-progress-wrap">
+          <div class="status-progress-label">Status Progress</div>
+          <div class="status-progress-steps" id="tr-steps"></div>
         </div>
-        <div class="field-group">
-          <label class="field-label">Type of Facility <span class="req">*</span></label>
-          <select id="i-ftype">
-            <option value="">-- Select Facility Type --</option>
-            <option>Teaching Hospital</option><option>Regional Hospital</option>
-            <option>District Hospital</option><option>Polyclinic</option>
-            <option>Health Centre</option><option>CHPS Compound</option>
-            <option>Private Hospital</option><option>Mission/Faith-Based Hospital</option>
-            <option>Maternity Home</option><option>Clinic</option>
-          </select>
-          <span class="err-msg" id="err-i-ftype"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Type of Equipment <span class="req">*</span></label>
-          <select id="i-etype">
-            <option value="">-- Select Equipment Type --</option>
-            <option>Diagnostic Imaging</option><option>Patient Monitoring</option>
-            <option>Laboratory Equipment</option><option>Surgical Equipment</option>
-            <option>Anaesthesia Equipment</option><option>Sterilization Equipment</option>
-            <option>Physiotherapy Equipment</option><option>Dental Equipment</option>
-            <option>Ophthalmic Equipment</option><option>Emergency Equipment</option>
-            <option>ICU Equipment</option><option>Neonatal Equipment</option>
-            <option>Dialysis Equipment</option><option>Endoscopy Equipment</option>
-            <option>Radiation Therapy</option><option>Other</option>
-          </select>
-          <span class="err-msg" id="err-i-etype"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Quantity <span class="req">*</span></label>
-          <select id="i-qty">
-            <option value="">-- Select Quantity --</option>
-          </select>
-          <span class="err-msg" id="err-i-qty"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Preferred Date for Installation</label>
-          <input type="date" id="i-date"/>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Name of Person Requesting <span class="req">*</span></label>
-          <input type="text" id="i-name" placeholder="Full name"/>
-          <span class="err-msg" id="err-i-name"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Grade / Position</label>
-          <input type="text" id="i-grade" placeholder="e.g. Biomedical Engineer, Nurse Manager"/>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Contact Number <span class="req">*</span></label>
-          <input type="tel" id="i-contact" placeholder="e.g. 0244000000"/>
-          <span class="err-msg" id="err-i-contact"></span>
+        <div class="current-status-wrap">
+          <span class="current-status-badge" id="tr-badge"></span>
         </div>
       </div>
-      <div class="form-footer">
-        <button class="btn-primary" onclick="submitInstall()">📤 Submit Installation Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 2: INSTALLATION REQUEST ══ -->
+<div id="panel-install" class="panel">
+  <div class="section-header">
+    <div class="section-icon icon-install">🔩</div>
+    <div>
+      <div class="section-title">Request for Equipment Installation</div>
+      <div class="section-sub">For newly received equipment requiring professional installation</div>
+    </div>
+  </div>
+  <div class="banner banner-blue">💡 <strong>Note:</strong> This form is for newly received equipment requiring installation or commissioning by the Clinical Engineering Unit.</div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="field-group">
+        <label class="field-label">Name of Facility <span class="req">*</span></label>
+        <input type="text" id="i-facility" maxlength="150" placeholder="e.g. Axim Government Hospital"/>
+        <span class="err-msg" id="err-i-facility"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">District <span class="req">*</span></label>
+        <select id="i-district"><option value="">-- Select District --</option></select>
+        <span class="err-msg" id="err-i-district"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Type of Facility <span class="req">*</span></label>
+        <select id="i-ftype">
+          <option value="">-- Select --</option>
+          <option>Teaching Hospital</option><option>Regional Hospital</option>
+          <option>District Hospital</option><option>Polyclinic</option>
+          <option>Health Centre</option><option>CHPS Compound</option>
+          <option>Private Hospital</option><option>Mission/Faith-Based Hospital</option>
+          <option>Maternity Home</option><option>Clinic</option>
+        </select>
+        <span class="err-msg" id="err-i-ftype"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Type of Equipment <span class="req">*</span></label>
+        <select id="i-etype">
+          <option value="">-- Select --</option>
+          <option>Diagnostic Imaging</option><option>Patient Monitoring</option>
+          <option>Laboratory Equipment</option><option>Surgical Equipment</option>
+          <option>Anaesthesia Equipment</option><option>Sterilization Equipment</option>
+          <option>Physiotherapy Equipment</option><option>Dental Equipment</option>
+          <option>Ophthalmic Equipment</option><option>Emergency Equipment</option>
+          <option>ICU Equipment</option><option>Neonatal Equipment</option>
+          <option>Dialysis Equipment</option><option>Endoscopy Equipment</option>
+          <option>Radiation Therapy</option><option>Other</option>
+        </select>
+        <span class="err-msg" id="err-i-etype"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Quantity <span class="req">*</span></label>
+        <select id="i-qty"><option value="">-- Select --</option></select>
+        <span class="err-msg" id="err-i-qty"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Preferred Date for Installation</label>
+        <input type="date" id="i-date"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Name of Person Requesting <span class="req">*</span></label>
+        <input type="text" id="i-name" maxlength="100" placeholder="Full name"/>
+        <span class="err-msg" id="err-i-name"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Grade / Position</label>
+        <input type="text" id="i-grade" maxlength="100" placeholder="e.g. Biomedical Engineer"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Contact Number <span class="req">*</span></label>
+        <p class="field-hint">10 digits · starts with 0 · digits only (e.g. 0244000000, 0201234567)</p>
+        <input type="tel" id="i-contact" maxlength="10" placeholder="e.g. 0244000000"
+          oninput="livePhoneInput('i-contact')" inputmode="numeric" pattern="[0-9]*"/>
+        <span class="err-msg" id="err-i-contact"></span>
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" id="btn-install" onclick="submitInstall()">📤 Submit Installation Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 3: EQUIPMENT REQUEST ══ -->
+<div id="panel-equip" class="panel">
+  <div class="section-header">
+    <div class="section-icon icon-equip">🏥</div>
+    <div>
+      <div class="section-title">Medical Equipment Request</div>
+      <div class="section-sub">Request medical equipment your facility needs</div>
+    </div>
+  </div>
+  <div class="banner banner-green">⚖️ <strong>Equity Notice:</strong> Information provided will guide equitable distribution of medical equipment across the region. Please be accurate.</div>
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="field-group">
+        <label class="field-label">Name of Facility <span class="req">*</span></label>
+        <input type="text" id="e-facility" maxlength="150" placeholder="e.g. Prestea Government Hospital"/>
+        <span class="err-msg" id="err-e-facility"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">District <span class="req">*</span></label>
+        <select id="e-district"><option value="">-- Select District --</option></select>
+        <span class="err-msg" id="err-e-district"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Type of Equipment <span class="req">*</span></label>
+        <select id="e-etype">
+          <option value="">-- Select --</option>
+          <option>Diagnostic Imaging</option><option>Patient Monitoring</option>
+          <option>Laboratory Equipment</option><option>Surgical Equipment</option>
+          <option>Anaesthesia Equipment</option><option>Sterilization Equipment</option>
+          <option>Physiotherapy Equipment</option><option>Dental Equipment</option>
+          <option>Ophthalmic Equipment</option><option>Emergency Equipment</option>
+          <option>ICU Equipment</option><option>Neonatal Equipment</option>
+          <option>Dialysis Equipment</option><option>Endoscopy Equipment</option>
+          <option>Radiation Therapy</option><option>Other</option>
+        </select>
+        <span class="err-msg" id="err-e-etype"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Quantity Needed <span class="req">*</span></label>
+        <select id="e-qty"><option value="">-- Select --</option></select>
+        <span class="err-msg" id="err-e-qty"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Your Name <span class="req">*</span></label>
+        <input type="text" id="e-name" maxlength="100" placeholder="Full name"/>
+        <span class="err-msg" id="err-e-name"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Grade / Position</label>
+        <input type="text" id="e-grade" maxlength="100" placeholder="e.g. Facility Manager"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Your Contact Number <span class="req">*</span></label>
+        <p class="field-hint">10 digits · starts with 0 · digits only (e.g. 0244000000, 0201234567)</p>
+        <input type="tel" id="e-contact" maxlength="10" placeholder="e.g. 0244000000"
+          oninput="livePhoneInput('e-contact')" inputmode="numeric" pattern="[0-9]*"/>
+        <span class="err-msg" id="err-e-contact"></span>
+      </div>
+    </div>
+    <div class="field-group" style="margin-bottom:1rem">
+      <label class="field-label">Reasons for the Request <span class="req">*</span></label>
+      <p class="field-hint">Explain clinical need and how it will improve patient outcomes</p>
+      <textarea id="e-reason" rows="5" maxlength="2000" oninput="updateCharCount('e-reason','e-reason-count',2000)" placeholder="Patient volume, current gaps, clinical need…"></textarea>
+      <div class="char-count"><span id="e-reason-count">0</span>/2000</div>
+      <span class="err-msg" id="err-e-reason"></span>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary green" id="btn-equip" onclick="submitEquip()">📤 Submit Equipment Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 4: ADMIN ══ -->
+<div id="panel-admin" class="panel">
+  <div id="admin-login">
+    <div class="login-wrap">
+      <div class="login-card">
+        <div class="login-icon">🔐</div>
+        <div class="login-title">Admin Access</div>
+        <div class="login-sub">Clinical Engineering Unit — Restricted Area</div>
+        <input type="password" id="admin-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <span class="err-msg" id="login-err" style="display:block;margin-top:6px"></span>
+        <button class="btn-primary" id="btn-login" style="margin-top:1rem;width:100%" onclick="doLogin()">🔓 Login</button>
       </div>
     </div>
   </div>
 
-  <!-- ══ TAB 3: EQUIPMENT REQUEST ══ -->
-  <div id="panel-equip" class="panel">
-    <div class="section-header">
-      <div class="section-icon icon-equip">🏥</div>
+  <div id="admin-dashboard" class="admin-panel">
+    <div class="admin-header-row">
       <div>
-        <div class="section-title">Medical Equipment Request</div>
-        <div class="section-sub">Request medical equipment your facility requires to improve patient care</div>
+        <div class="section-title">🔐 Admin Dashboard</div>
+        <div class="section-sub">Clinical Engineering Unit — Western Region
+          &nbsp;·&nbsp; <span id="last-refresh" style="font-size:.72rem;color:var(--text3)">Not yet loaded</span>
+        </div>
+        <div class="session-timer" id="session-timer"></div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn-outline btn-sm" onclick="loadAllAdminData()" title="Refresh from Google Sheets">🔄 Refresh</button>
+        <button class="btn-outline btn-sm" id="open-sheet-btn" onclick="openGoogleSheet()" title="Open Google Sheet">📊 Open Sheet</button>
+        <button class="btn-outline btn-sm" onclick="doLogout()">Logout</button>
       </div>
     </div>
 
-    <div class="banner banner-green">
-      ⚖️ <strong>Equity Notice:</strong> Information provided through this form will be used to assess and guide equitable distribution of medical equipment across all facilities in the region. Please be as accurate as possible. Contact the Regional Equipment Manager on 0506971001
+    <div class="admin-tabs">
+      <button class="atab-btn active" onclick="showAdminTab('atab-reports',this)">📋 Fault Reports</button>
+      <button class="atab-btn" onclick="showAdminTab('atab-installs',this)">🔩 Installations</button>
+      <button class="atab-btn" onclick="showAdminTab('atab-equips',this)">🏥 Equipment Requests</button>
+      <button class="atab-btn" onclick="showAdminTab('atab-districts',this)">📍 Manage Districts</button>
     </div>
 
-    <div class="form-card">
-      <div class="form-grid">
-        <div class="field-group">
-          <label class="field-label">Name of Facility <span class="req">*</span></label>
-          <input type="text" id="e-facility" placeholder="e.g. Prestea Government Hospital"/>
-          <span class="err-msg" id="err-e-facility"></span>
+    <div id="atab-reports" class="atab-panel">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div id="fault-reports-list"><div class="empty-state">📭 No fault reports yet.</div></div>
+    </div>
+    <div id="atab-installs" class="atab-panel" style="display:none">
+      <div id="install-list"><div class="empty-state">📭 No installation requests yet.</div></div>
+    </div>
+    <div id="atab-equips" class="atab-panel" style="display:none">
+      <div id="equip-list"><div class="empty-state">📭 No equipment requests yet.</div></div>
+    </div>
+    <div id="atab-districts" class="atab-panel" style="display:none">
+      <div class="district-manager">
+        <div class="dm-title">📍 Manage District Dropdown List</div>
+        <p style="font-size:.78rem;color:var(--text3);margin-bottom:.75rem">Changes are saved to Google Sheets and apply immediately to all form dropdowns.</p>
+        <ul class="dm-list" id="district-list-ui"></ul>
+        <div class="dm-add-row">
+          <input type="text" id="new-district-input" maxlength="100" placeholder="Type new district name…" onkeydown="if(event.key==='Enter')addDistrict()"/>
+          <button class="btn-primary" onclick="addDistrict()" style="white-space:nowrap;padding:.58rem 1rem">+ Add</button>
         </div>
-        <div class="field-group">
-          <label class="field-label">District <span class="req">*</span></label>
-          <select id="e-district">
-            <option value="">-- Select District --</option>
-          </select>
-          <span class="err-msg" id="err-e-district"></span>
+        <div class="dm-save-row">
+          <button class="btn-primary" onclick="persistDistricts()" style="padding:.58rem 1.2rem">💾 Save Districts to Sheet</button>
+          <span class="dm-save-status" id="dm-save-status"></span>
         </div>
-        <div class="field-group">
-          <label class="field-label">Type of Equipment <span class="req">*</span></label>
-          <select id="e-etype">
-            <option value="">-- Select Equipment Type --</option>
-            <option>Diagnostic Imaging</option><option>Patient Monitoring</option>
-            <option>Laboratory Equipment</option><option>Surgical Equipment</option>
-            <option>Anaesthesia Equipment</option><option>Sterilization Equipment</option>
-            <option>Physiotherapy Equipment</option><option>Dental Equipment</option>
-            <option>Ophthalmic Equipment</option><option>Emergency Equipment</option>
-            <option>ICU Equipment</option><option>Neonatal Equipment</option>
-            <option>Dialysis Equipment</option><option>Endoscopy Equipment</option>
-            <option>Radiation Therapy</option><option>Other</option>
-          </select>
-          <span class="err-msg" id="err-e-etype"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Quantity Needed <span class="req">*</span></label>
-          <select id="e-qty">
-            <option value="">-- Select Quantity --</option>
-          </select>
-          <span class="err-msg" id="err-e-qty"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Your Name <span class="req">*</span></label>
-          <input type="text" id="e-name" placeholder="Full name"/>
-          <span class="err-msg" id="err-e-name"></span>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Grade / Position</label>
-          <input type="text" id="e-grade" placeholder="e.g. Facility Manager, Biomedical Technician"/>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Your Contact Number <span class="req">*</span></label>
-          <input type="tel" id="e-contact" placeholder="e.g. 0244000000"/>
-          <span class="err-msg" id="err-e-contact"></span>
-        </div>
-      </div>
-      <div class="field-group" style="margin-bottom:1rem;">
-        <label class="field-label">Reasons for the Request <span class="req">*</span></label>
-        <p class="field-hint">Explain why your facility needs this equipment and how it will improve patient outcomes</p>
-        <textarea id="e-reason" rows="5" placeholder="Provide detailed justification — patient volume, current gaps, clinical need, etc."></textarea>
-        <span class="err-msg" id="err-e-reason"></span>
-      </div>
-      <div class="form-footer">
-        <button class="btn-primary green" onclick="submitEquip()">📤 Submit Equipment Request</button>
       </div>
     </div>
   </div>
-
-  <!-- ══ TAB 4: ADMIN ══ -->
-  <div id="panel-admin" class="panel">
-
-    <!-- Login screen -->
-    <div id="admin-login">
-      <div class="login-wrap">
-        <div class="login-card">
-          <div class="login-icon">🔐</div>
-          <div class="login-title">Admin Access</div>
-          <div class="login-sub">Clinical Engineering Unit — Restricted Area</div>
-          <input type="password" id="admin-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()"/>
-          <span class="err-msg" id="login-err" style="display:block;margin-top:6px;"></span>
-          <button class="btn-primary" style="margin-top:1rem;width:100%;" onclick="doLogin()">🔓 Login</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Admin dashboard (hidden until login) -->
-    <div id="admin-dashboard" class="admin-panel">
-
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.1rem;flex-wrap:wrap;gap:0.5rem;">
-        <div>
-          <div class="section-title" style="display:flex;align-items:center;gap:6px;">🔐 Admin Dashboard</div>
-          <div class="section-sub">Clinical Engineering Unit — Western Region &nbsp;·&nbsp; <span id="last-refresh" style="font-size:0.72rem;color:var(--text3);">Not yet loaded</span></div>
-        </div>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-          <button class="btn-outline btn-sm" onclick="loadAllAdminData()" title="Reload all data from Google Sheets">🔄 Refresh</button>
-          <button class="btn-outline btn-sm" id="open-sheet-btn" onclick="openGoogleSheet()" title="Open Google Sheet directly">📊 Open Sheet</button>
-          <button class="btn-outline btn-sm" onclick="doLogout()">Logout</button>
-        </div>
-      </div>
-
-      <!-- Admin Sub-tabs -->
-      <div class="admin-tabs">
-        <button class="atab-btn active" onclick="showAdminTab('atab-reports',this)">📋 Fault Reports</button>
-        <button class="atab-btn" onclick="showAdminTab('atab-installs',this)">🔩 Installations</button>
-        <button class="atab-btn" onclick="showAdminTab('atab-equips',this)">🏥 Equipment Requests</button>
-        <button class="atab-btn" onclick="showAdminTab('atab-districts',this)">📍 Manage Districts</button>
-      </div>
-
-      <!-- ── Fault Reports Admin View ── -->
-      <div id="atab-reports" class="atab-panel">
-        <div class="stats-grid" id="stats-grid"></div>
-        <div id="fault-reports-list"><div class="empty-state">📭 No fault reports yet.</div></div>
-      </div>
-
-      <!-- ── Installation Requests Admin View ── -->
-      <div id="atab-installs" class="atab-panel" style="display:none;">
-        <div id="install-list"><div class="empty-state">📭 No installation requests yet.</div></div>
-      </div>
-
-      <!-- ── Equipment Requests Admin View ── -->
-      <div id="atab-equips" class="atab-panel" style="display:none;">
-        <div id="equip-list"><div class="empty-state">📭 No equipment requests yet.</div></div>
-      </div>
-
-      <!-- ── District Manager ── -->
-      <div id="atab-districts" class="atab-panel" style="display:none;">
-        <div class="district-manager">
-          <div class="dm-title">📍 Manage District Dropdown List</div>
-          <p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.75rem;">Add or remove districts. Changes take effect immediately across all form dropdowns.</p>
-          <ul class="dm-list" id="district-list-ui"></ul>
-          <div class="dm-add-row">
-            <input type="text" id="new-district-input" placeholder="Type new district name…" onkeydown="if(event.key==='Enter')addDistrict()"/>
-            <button class="btn-primary" onclick="addDistrict()" style="white-space:nowrap;padding:0.58rem 1rem;">+ Add</button>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /admin-dashboard -->
-  </div><!-- /panel-admin -->
+</div>
 
 </div><!-- /app-body -->
 
@@ -723,15 +584,16 @@
   © <span id="yr"></span> Clinical Engineering Unit — Western Region Health Directorate &nbsp;|&nbsp; All submissions are confidential
 </footer>
 
-<!-- ════════════ SUCCESS MODAL ════════════ -->
+<!-- SUCCESS MODAL -->
 <div class="modal-overlay" id="success-modal">
   <div class="modal-card">
     <div class="modal-icon">✅</div>
     <div class="modal-title">Submission Successful!</div>
-    <div class="modal-body" id="modal-body-text">Your form has been submitted to the Clinical Engineering Unit.</div>
+    <div class="modal-body" id="modal-body-text"></div>
     <div class="modal-ref">
-      <span class="ref-label">Reference Code</span>
-      <span class="ref-code" id="modal-ref-code">—</span>
+      <span class="ref-label">Reference Code — tap to copy</span>
+      <span class="ref-code" id="modal-ref-code" onclick="copyRef()">—</span>
+      <span class="ref-copy-tip" id="ref-copy-tip">Tap the code above to copy it</span>
     </div>
     <div class="modal-q">Would you like to submit another form?</div>
     <div class="modal-btns">
@@ -741,245 +603,203 @@
   </div>
 </div>
 
-<!-- ════════════ JAVASCRIPT ════════════ -->
+<!-- ERROR MODAL -->
+<div class="modal-overlay" id="error-modal">
+  <div class="error-modal-card">
+    <div class="error-modal-icon">⚠️</div>
+    <div class="error-modal-title">Submission Failed</div>
+    <div class="error-modal-body" id="error-modal-body">An error occurred. Please try again.</div>
+    <button class="btn-primary" onclick="closeErrorModal()" style="width:100%">Try Again</button>
+  </div>
+</div>
+
 <script>
-// ─────────────────────────────────────────────────
-// CONFIG — ✏️ Replace with your deployed GAS Web App URL
-// ─────────────────────────────────────────────────
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwJf0gmJdRg6gAbt3pSk18SnSNRB-1iku7V_cKw_T_XVoweHAj3otgDyb_me0yh1iCH/exec"; // ← Replace this
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — ✏️ Replace YOUR_SCRIPT_ID with your GAS Web App URL
+// Also replace PASTE_YOUR_SPREADSHEET_ID_HERE with your Sheet ID
+// ═══════════════════════════════════════════════════════════════
+const GAS_URL  = "https://script.google.com/macros/s/AKfycbwJf0gmJdRg6gAbt3pSk18SnSNRB-1iku7V_cKw_T_XVoweHAj3otgDyb_me0yh1iCH/exec";
+const SHEET_ID = "1kFbir8GNGqDWVSgJpy6vxZfBpUKI-3rIoFZ3ytpeyeA";
 
-const FACILITY_PLACEHOLDERS = [
-  "e.g. Effia Nkwanta Regional Hospital, Takoradi",
-  "e.g. Axim Government Hospital",
-  "e.g. Prestea Government Hospital",
-  "e.g. Tarkwa Municipal Hospital",
-  "e.g. Sekondi Polyclinic",
-  "e.g. Shama Health Centre",
-  "e.g. Kojokrom CHPS Compund",
-  "e.g. Abura Health Centre",
-  "e.g. Half Assini Government Hospital",
-  "e.g. Elubo Polyclinic"
-];
-
+// ═══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════
 const STATUS_STEPS = [
-  { key: "received",         label: "Received",        icon: "📥" },
-  { key: "pending",          label: "Pending",          icon: "⏳" },
-  { key: "under_repair",     label: "Under Repair",     icon: "🔧" },
-  { key: "repair_completed", label: "Repair Completed", icon: "✅" },
-  { key: "dispatched",       label: "Dispatched",       icon: "🚚" },
-  { key: "obsolete",         label: "Obsolete",         icon: "⛔" },
+  { key:"received",         label:"Received",         icon:"📥" },
+  { key:"pending",          label:"Pending",           icon:"⏳" },
+  { key:"under_repair",     label:"Under Repair",      icon:"🔧" },
+  { key:"repair_completed", label:"Repair Completed",  icon:"✅" },
+  { key:"dispatched",       label:"Dispatched",        icon:"🚚" },
+  { key:"obsolete",         label:"Obsolete",          icon:"⛔" }
 ];
+const STATUS_META = {
+  received:         { label:"Received by Engineering Unit", icon:"📥", cls:"badge-received" },
+  pending:          { label:"Pending Assessment",            icon:"⏳", cls:"badge-pending" },
+  under_repair:     { label:"Under Repair",                  icon:"🔧", cls:"badge-under_repair" },
+  repair_completed: { label:"Repair Completed",              icon:"✅", cls:"badge-repair_completed" },
+  dispatched:       { label:"Dispatched",                    icon:"🚚", cls:"badge-dispatched" },
+  obsolete:         { label:"Declared Obsolete",             icon:"⛔", cls:"badge-obsolete" }
+};
+const SESSION_MINUTES = 30; // Admin auto-logout after this many minutes of inactivity
 
-// ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 // STATE
-// ─────────────────────────────────────────────────
-let districts = [
-  "Sekondi-Takoradi Metro","Ahanta West","Shama","Wassa East",
-  "Wassa Amenfi East","Wassa Amenfi West","Wassa Amenfi Central",
-  "Amenfi East","Mpohor","Tarkwa-Nsuaem","Prestea-Huni Valley",
-  "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East",
-  "Bia East","Bia West","Bodi","Aowin","Sefwi Wiawso",
-  "Sefwi Akontombra","Bibiani-Anhwiaso-Bekwai"
-];
-
+// ═══════════════════════════════════════════════════════════════
+let districts      = [];
 let faultReports   = [];
 let installReports = [];
-equipReports       = [];
+let equipReports   = [];
 let currentTab     = "fault";
 let pendingReset   = null;
+let adminToken     = null;       // server-issued session token
+let sessionTimer   = null;       // inactivity countdown handle
+let sessionExpiry  = null;       // Date when session expires
 
-// ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 // INIT
-// ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 document.getElementById("yr").textContent = new Date().getFullYear();
 document.getElementById("i-date").min = new Date().toISOString().split("T")[0];
 
-// Populate quantity selects
+// Quantity dropdowns
 ["i-qty","e-qty"].forEach(id => {
   const sel = document.getElementById(id);
   for (let i = 1; i <= 50; i++) {
-    const opt = document.createElement("option");
-    opt.value = opt.textContent = i;
-    sel.appendChild(opt);
+    const o = document.createElement("option");
+    o.value = o.textContent = i;
+    sel.appendChild(o);
   }
 });
 
-// Initial district population
-populateAllDistricts();
-renderDistrictManagerUI();
-
-// ─────────────────────────────────────────────────
-// TAB SWITCHING
-// ─────────────────────────────────────────────────
-function showTab(name, btn) {
-  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-  document.getElementById("panel-" + name).classList.add("active");
-  btn.classList.add("active");
-  currentTab = name;
+// Offline detection
+function updateOnlineStatus() {
+  document.getElementById("offline-banner").style.display = navigator.onLine ? "none" : "block";
 }
+window.addEventListener("online",  updateOnlineStatus);
+window.addEventListener("offline", updateOnlineStatus);
+updateOnlineStatus();
 
-function showAdminTab(id, btn) {
-  document.querySelectorAll(".atab-panel").forEach(p => p.style.display = "none");
-  document.querySelectorAll(".atab-btn").forEach(b => b.classList.remove("active"));
-  document.getElementById(id).style.display = "block";
-  btn.classList.add("active");
-  if (id === "atab-districts") renderDistrictManagerUI();
-}
+// Load districts from GAS on startup
+loadDistrictsFromGAS();
+// Ping GAS connection
+setTimeout(pingGAS, 800);
 
-// ─────────────────────────────────────────────────
-// ADMIN AUTH
-// ─────────────────────────────────────────────────
-function doLogin() {
-  const pw = document.getElementById("admin-pw").value;
-  if (pw === "CEUWRHD") {
-    document.getElementById("admin-login").style.display = "none";
-    document.getElementById("admin-dashboard").classList.add("open");
-    loadAllAdminData();
-  } else {
-    document.getElementById("login-err").textContent = "Incorrect password. Please try again.";
-  }
-}
-function doLogout() {
-  document.getElementById("admin-login").style.display = "block";
-  document.getElementById("admin-dashboard").classList.remove("open");
-  document.getElementById("admin-pw").value = "";
-  document.getElementById("login-err").textContent = "";
-}
+// ═══════════════════════════════════════════════════════════════
+// JSONP ENGINE — all GAS communication goes through here
+// Injects a <script> tag (CORS-free), calls callback, cleans up
+// ═══════════════════════════════════════════════════════════════
+function gasRequest(params, onSuccess, onError, timeoutMs) {
+  timeoutMs = timeoutMs || 15000;
+  const cbName = "gasCB_" + Date.now() + "_" + Math.floor(Math.random()*9999);
+  params.callback = cbName;
+  // CRITICAL: skip null/undefined values — encodeURIComponent(null) produces
+  // the string "null" which breaks token comparison in requireToken on GAS side.
+  const url = GAS_URL + "?" + Object.keys(params)
+    .filter(k => params[k] !== null && params[k] !== undefined)
+    .map(k => encodeURIComponent(k) + "=" + encodeURIComponent(params[k]))
+    .join("&");
 
-// ─────────────────────────────────────────────────
-// ADMIN: FETCH ALL DATA LIVE FROM GOOGLE SHEETS
-// Called on login and on manual refresh
-// ─────────────────────────────────────────────────
-function loadAllAdminData() {
-  loadingState("fault-reports-list", "📡 Loading fault reports from Google Sheets…");
-  loadingState("install-list",       "📡 Loading installation requests…");
-  loadingState("equip-list",         "📡 Loading equipment requests…");
-  document.getElementById("stats-grid").innerHTML =
-    '<div style="grid-column:1/-1;font-size:0.8rem;color:var(--text3);">⏳ Loading stats…</div>';
-
-  const stamp = document.getElementById("last-refresh");
-  if (stamp) stamp.textContent = "Loading…";
-
-  fetchFromGAS("fault",   data => { faultReports   = data; renderFaultList();   renderStats(); });
-  fetchFromGAS("install", data => { installReports = data; renderInstallList(); });
-  fetchFromGAS("equip",   data => { equipReports   = data; renderEquipList();
-    // Stamp time after last fetch completes
-    if (stamp) stamp.textContent = "Last updated: " + new Date().toLocaleTimeString();
-  });
-}
-
-function fetchFromGAS(type, onSuccess) {
-  // Uses script-tag JSONP — the only reliable CORS-free method from GitHub Pages
-  const cbName = "gasCB_" + type + "_" + Date.now();
-  const url    = GAS_URL + "?action=getAll&type=" + type + "&callback=" + cbName;
-
-  const listId = type === "fault" ? "fault-reports-list"
-               : type === "install" ? "install-list" : "equip-list";
-
-  // Timeout safety net — show error if no response within 15s
   const timer = setTimeout(function() {
-    delete window[cbName];
-    const el = document.getElementById(listId);
-    if (el) el.innerHTML = '<div class="empty-state" style="color:var(--red);">⚠️ Could not reach Google Sheets. Check GAS_URL and redeploy.</div>';
-  }, 15000);
+    cleanup();
+    if (onError) onError("Request timed out. Please check your connection.");
+  }, timeoutMs);
 
-  window[cbName] = function(result) {
+  function cleanup() {
     clearTimeout(timer);
     delete window[cbName];
-    const old = document.getElementById("gs-tag-" + type);
-    if (old) old.remove();
-    if (result && result.ok && Array.isArray(result.records)) {
-      onSuccess(result.records.map(function(row){ return mapSheetRow(type, row); }));
+    const el = document.getElementById("gs-req-" + cbName);
+    if (el) el.remove();
+  }
+
+  window[cbName] = function(result) {
+    cleanup();
+    if (result && result.ok) {
+      onSuccess(result);
     } else {
-      console.warn("GAS getAll error for", type, result);
-      onSuccess([]);
+      if (onError) onError(result && result.error ? result.error : "Server returned an error.");
     }
   };
 
-  const script = document.createElement("script");
-  script.id    = "gs-tag-" + type;
-  script.src   = url;
+  const script   = document.createElement("script");
+  script.id      = "gs-req-" + cbName;
+  script.src     = url;
   script.onerror = function() {
-    clearTimeout(timer);
-    delete window[cbName];
-    console.warn("Script tag failed for:", type);
-    onSuccess([]);
+    cleanup();
+    if (onError) onError("Could not reach the server. Check your internet connection.");
   };
   document.body.appendChild(script);
 }
 
-// Maps raw Google Sheet column headers to the field names the render functions expect
-function mapSheetRow(type, row) {
-  if (type === "fault") {
-    return {
-      ref:       row["Ref Code"]           || "",
-      timestamp: row["Timestamp"]          || "",
-      facility:  row["Facility Name"]      || "",
-      district:  row["District"]           || "",
-      ftype:     row["Facility Type"]      || "",
-      unit:      row["Unit / Department"]  || "",
-      equipment: row["Equipment Name"]     || "",
-      desc:      row["Fault Description"]  || "",
-      reporter:  row["Reporter Name"]      || "",
-      contact:   row["Contact Number"]     || "",
-      remarks:   row["Remarks"]            || "",
-      status:    row["Status"]             || "Received",
-      image:     null
-    };
+// ═══════════════════════════════════════════════════════════════
+// PING & CONNECTION INDICATOR
+// ═══════════════════════════════════════════════════════════════
+function pingGAS() {
+  const el = document.getElementById("gas-status");
+  if (!el) return;
+  if (GAS_URL.includes("YOUR_SCRIPT_ID")) {
+    el.textContent = "⚠️ GAS URL not set"; el.style.color = "#ffd"; return;
   }
-  if (type === "install") {
-    return {
-      ref:      row["Ref Code"]          || "",
-      timestamp:row["Timestamp"]         || "",
-      facility: row["Facility Name"]     || "",
-      district: row["District"]          || "",
-      ftype:    row["Facility Type"]     || "",
-      etype:    row["Equipment Type"]    || "",
-      qty:      row["Quantity"]          || "",
-      date:     row["Preferred Date"]    || "",
-      name:     row["Requester Name"]    || "",
-      grade:    row["Grade / Position"]  || "",
-      contact:  row["Contact Number"]    || "",
-      status:   row["Status"]            || ""
-    };
-  }
-  if (type === "equip") {
-    return {
-      ref:      row["Ref Code"]           || "",
-      timestamp:row["Timestamp"]          || "",
-      facility: row["Facility Name"]      || "",
-      district: row["District"]           || "",
-      etype:    row["Equipment Type"]     || "",
-      qty:      row["Quantity Needed"]    || "",
-      reason:   row["Reason for Request"] || "",
-      name:     row["Requester Name"]     || "",
-      contact:  row["Contact Number"]     || "",
-      grade:    row["Grade / Position"]   || "",
-      status:   row["Status"]             || ""
-    };
-  }
-  return row;
+  gasRequest(
+    { action: "ping" },
+    function(result) {
+      if (result.sheetsReady === false) {
+        el.textContent = "⚠️ Sheets not initialised";
+        el.style.color = "#ffd";
+        // Auto-trigger initSheets via GAS if sheets aren't ready
+        gasRequest({ action: "initSheets" },
+          function() { el.textContent = "🟢 Connected"; el.style.color = "#afffda"; },
+          function() {}
+        );
+      } else {
+        el.textContent = "🟢 Connected"; el.style.color = "#afffda";
+      }
+    },
+    function() { el.textContent = "🔴 Offline"; el.style.color = "#ffaaaa"; }
+  );
 }
 
-function loadingState(containerId, msg) {
-  const el = document.getElementById(containerId);
-  if (el) el.innerHTML = '<div class="empty-state" style="color:var(--primary);">' + msg + '</div>';
+// ═══════════════════════════════════════════════════════════════
+// DISTRICTS — loaded from GAS (persisted in Google Sheet)
+// ═══════════════════════════════════════════════════════════════
+function loadDistrictsFromGAS() {
+  gasRequest(
+    { action: "getDistricts" },
+    function(result) {
+      if (Array.isArray(result.districts) && result.districts.length > 0) {
+        districts = result.districts;
+      } else {
+        // Fallback hardcoded list if sheet not yet seeded
+        districts = [
+          "Sekondi-Takoradi Metro","Ahanta West","Shama","Wassa East",
+          "Wassa Amenfi East","Wassa Amenfi West","Wassa Amenfi Central",
+          "Amenfi East","Mpohor","Tarkwa-Nsuaem","Prestea-Huni Valley",
+          "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East"
+        ];
+      }
+      populateAllDistricts();
+    },
+    function() {
+      // Fallback silently
+      districts = [
+        "Sekondi-Takoradi Metro","Ahanta West","Shama","Tarkwa-Nsuaem",
+        "Prestea-Huni Valley","Effia-Kwesimintsim","Ellembelle","Jomoro",
+        "Nzema East","Sefwi Wiawso","Bibiani-Anhwiaso-Bekwai"
+      ];
+      populateAllDistricts();
+    }
+  );
 }
 
-// ─────────────────────────────────────────────────
-// DISTRICTS
-// ─────────────────────────────────────────────────
 function populateAllDistricts() {
   ["f-district","i-district","e-district"].forEach(id => {
     const sel = document.getElementById(id);
     const cur = sel.value;
     sel.innerHTML = '<option value="">-- Select District --</option>';
-    districts.sort().forEach(d => {
-      const opt = document.createElement("option");
-      opt.value = opt.textContent = d;
-      if (d === cur) opt.selected = true;
-      sel.appendChild(opt);
+    districts.slice().sort().forEach(d => {
+      const o = document.createElement("option");
+      o.value = o.textContent = d;
+      if (d === cur) o.selected = true;
+      sel.appendChild(o);
     });
   });
 }
@@ -989,8 +809,15 @@ function renderDistrictManagerUI() {
   ul.innerHTML = "";
   districts.slice().sort().forEach(d => {
     const li = document.createElement("li");
-    li.innerHTML = `<span>${d}</span>
-      <button class="dm-del" title="Remove ${d}" onclick="removeDistrict('${d.replace(/'/g,"\\'")}')">🗑</button>`;
+    const span = document.createElement("span");
+    span.textContent = d;
+    const btn = document.createElement("button");
+    btn.className = "dm-del";
+    btn.title = "Remove " + d;
+    btn.textContent = "🗑";
+    btn.onclick = function() { removeDistrict(d); };
+    li.appendChild(span);
+    li.appendChild(btn);
     ul.appendChild(li);
   });
 }
@@ -999,67 +826,572 @@ function addDistrict() {
   const inp = document.getElementById("new-district-input");
   const val = inp.value.trim();
   if (!val) return;
-  if (districts.map(d=>d.toLowerCase()).includes(val.toLowerCase())) {
+  if (districts.map(d => d.toLowerCase()).includes(val.toLowerCase())) {
     alert("District already exists."); return;
   }
   districts.push(val);
   inp.value = "";
   populateAllDistricts();
   renderDistrictManagerUI();
+  document.getElementById("dm-save-status").textContent = "⚠️ Unsaved — click Save";
+  document.getElementById("dm-save-status").style.color = "var(--amber)";
 }
 
 function removeDistrict(name) {
-  if (!confirm(`Remove "${name}" from the list?`)) return;
+  if (!confirm('Remove "' + name + '" from the list?')) return;
   districts = districts.filter(d => d !== name);
   populateAllDistricts();
   renderDistrictManagerUI();
+  document.getElementById("dm-save-status").textContent = "⚠️ Unsaved — click Save";
+  document.getElementById("dm-save-status").style.color = "var(--amber)";
 }
 
-// ─────────────────────────────────────────────────
+function persistDistricts() {
+  const status = document.getElementById("dm-save-status");
+  status.textContent = "⏳ Saving…"; status.style.color = "var(--text3)";
+  gasRequest(
+    { action: "saveDistricts", token: adminToken, list: JSON.stringify(districts) },
+    function() {
+      status.textContent = "✅ Saved to Google Sheet";
+      status.style.color = "var(--accent)";
+      setTimeout(() => { status.textContent = ""; }, 4000);
+    },
+    function(err) {
+      status.textContent = "❌ Save failed: " + err;
+      status.style.color = "var(--red)";
+    }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════════
+function showTab(name, btn) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("panel-" + name).classList.add("active");
+  btn.classList.add("active");
+  currentTab = name;
+}
+function showAdminTab(id, btn) {
+  document.querySelectorAll(".atab-panel").forEach(p => p.style.display = "none");
+  document.querySelectorAll(".atab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).style.display = "block";
+  btn.classList.add("active");
+  if (id === "atab-districts") renderDistrictManagerUI();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN AUTH — server-side validation, session token, auto-logout
+// ═══════════════════════════════════════════════════════════════
+function doLogin() {
+  const pw  = document.getElementById("admin-pw").value;
+  const btn = document.getElementById("btn-login");
+  const err = document.getElementById("login-err");
+  if (!pw) { err.textContent = "Please enter the password."; return; }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner">⏳</span> Verifying…';
+  err.textContent = "";
+
+  gasRequest(
+    { action: "adminLogin", pw: pw },
+    function(result) {
+      btn.disabled = false; btn.innerHTML = "🔓 Login";
+      adminToken = result.token;
+      document.getElementById("admin-login").style.display = "none";
+      document.getElementById("admin-dashboard").classList.add("open");
+      document.getElementById("admin-pw").value = "";
+      startSessionTimer();
+      loadAllAdminData();
+    },
+    function(errMsg) {
+      btn.disabled = false; btn.innerHTML = "🔓 Login";
+      err.textContent = errMsg || "Incorrect password.";
+    }
+  );
+}
+
+function doLogout() {
+  adminToken = null;
+  clearInterval(sessionTimer);
+  document.getElementById("admin-login").style.display = "block";
+  document.getElementById("admin-dashboard").classList.remove("open");
+  document.getElementById("session-timer").textContent = "";
+}
+
+// Session timer — auto-logout after SESSION_MINUTES of inactivity
+let lastActivity = Date.now();
+document.addEventListener("click",    function() { lastActivity = Date.now(); });
+document.addEventListener("keypress", function() { lastActivity = Date.now(); });
+
+function startSessionTimer() {
+  clearInterval(sessionTimer);
+  sessionExpiry = Date.now() + SESSION_MINUTES * 60 * 1000;
+  sessionTimer  = setInterval(function() {
+    const remaining = Math.round((sessionExpiry - Date.now()) / 1000);
+    if (remaining <= 0 || (Date.now() - lastActivity) > SESSION_MINUTES * 60 * 1000) {
+      clearInterval(sessionTimer);
+      alert("Your admin session has expired due to inactivity. Please log in again.");
+      doLogout();
+      return;
+    }
+    const m = Math.floor(remaining / 60);
+    const s = String(remaining % 60).padStart(2, "0");
+    const el = document.getElementById("session-timer");
+    if (el) el.textContent = "Session expires in " + m + ":" + s;
+    // Refresh token expiry on activity
+    if ((Date.now() - lastActivity) < 5000) {
+      sessionExpiry = Date.now() + SESSION_MINUTES * 60 * 1000;
+    }
+  }, 1000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN — LOAD ALL DATA FROM GOOGLE SHEETS
+// ═══════════════════════════════════════════════════════════════
+function loadAllAdminData() {
+  loadingState("fault-reports-list", "📡 Loading fault reports…");
+  loadingState("install-list",       "📡 Loading installation requests…");
+  loadingState("equip-list",         "📡 Loading equipment requests…");
+  document.getElementById("stats-grid").innerHTML =
+    '<div style="grid-column:1/-1;font-size:.8rem;color:var(--text3)">⏳ Loading…</div>';
+
+  let done = 0;
+  const onDone = function() {
+    done++;
+    if (done === 3) {
+      const stamp = document.getElementById("last-refresh");
+      if (stamp) stamp.textContent = "Last updated: " + new Date().toLocaleTimeString();
+    }
+  };
+
+  fetchSheet("fault",   function(d) { faultReports   = d; renderFaultList();   renderStats(); onDone(); });
+  fetchSheet("install", function(d) { installReports = d; renderInstallList(); onDone(); });
+  fetchSheet("equip",   function(d) { equipReports   = d; renderEquipList();   onDone(); });
+}
+
+function fetchSheet(type, onSuccess) {
+  const listId = type === "fault" ? "fault-reports-list" : type === "install" ? "install-list" : "equip-list";
+
+  // Guard: if adminToken is null/undefined, don't even send the request.
+  // This prevents the "Unauthorised" log entries caused by sending token=null.
+  if (!adminToken) {
+    document.getElementById(listId).innerHTML =
+      '<div class="empty-state" style="color:var(--red)">⚠️ Session expired. Please log in again.</div>';
+    onSuccess([]);
+    return;
+  }
+
+  gasRequest(
+    { action: "getAll", type: type, token: adminToken },
+    function(result) {
+      if (Array.isArray(result.records)) {
+        onSuccess(result.records.map(function(row) { return mapSheetRow(type, row); }));
+      } else {
+        loadingState(listId, "⚠️ No records returned.");
+        onSuccess([]);
+      }
+    },
+    function(err) {
+      document.getElementById(listId).innerHTML =
+        '<div class="empty-state" style="color:var(--red)">⚠️ ' + err + '</div>';
+      onSuccess([]);
+    }
+  );
+}
+
+function mapSheetRow(type, row) {
+  if (type === "fault") return {
+    ref: row["Ref Code"]||"", timestamp: row["Timestamp"]||"",
+    facility: row["Facility Name"]||"", district: row["District"]||"",
+    ftype: row["Facility Type"]||"", unit: row["Unit / Department"]||"",
+    equipment: row["Equipment Name"]||"", desc: row["Fault Description"]||"",
+    reporter: row["Reporter Name"]||"", contact: row["Contact Number"]||"",
+    remarks: row["Remarks"]||"", status: row["Status"]||"Received", image: null
+  };
+  if (type === "install") return {
+    ref: row["Ref Code"]||"", timestamp: row["Timestamp"]||"",
+    facility: row["Facility Name"]||"", district: row["District"]||"",
+    ftype: row["Facility Type"]||"", etype: row["Equipment Type"]||"",
+    qty: row["Quantity"]||"", date: row["Preferred Date"]||"",
+    name: row["Requester Name"]||"", grade: row["Grade / Position"]||"",
+    contact: row["Contact Number"]||"", status: row["Status"]||""
+  };
+  if (type === "equip") return {
+    ref: row["Ref Code"]||"", timestamp: row["Timestamp"]||"",
+    facility: row["Facility Name"]||"", district: row["District"]||"",
+    etype: row["Equipment Type"]||"", qty: row["Quantity Needed"]||"",
+    reason: row["Reason for Request"]||"", name: row["Requester Name"]||"",
+    contact: row["Contact Number"]||"", grade: row["Grade / Position"]||"",
+    status: row["Status"]||""
+  };
+  return row;
+}
+
+function loadingState(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = '<div class="empty-state" style="color:var(--primary)">' + msg + '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN — RENDER LISTS & STATS
+// ═══════════════════════════════════════════════════════════════
+
+// normaliseStatus — SHARED UTILITY used by renderStats, buildStepperHTML,
+// renderTrackResult, and renderFaultList. Converts GAS status strings
+// (e.g. "Under Repair", "Repair Completed") to CSS-safe keys
+// (e.g. "under_repair", "repair_completed") for badge class lookups.
+// NOTE: STATUS_STEPS[n].label in this file must always match the
+// allowed[] array in Code.gs updateStatus(). If they diverge, status
+// updates will return "Invalid status value" silently.
+function normaliseStatus(s) {
+  return (s || "").toLowerCase().replace(/ /g, "_");
+}
+
+function renderStats() {
+  const ns = normaliseStatus;
+  const t  = faultReports.length;
+  const c  = function(k) { return faultReports.filter(r => ns(r.status) === k).length; };
+  document.getElementById("stats-grid").innerHTML =
+    '<div class="stat-card s-blue"><span class="stat-num">'   + t                     + '</span><span class="stat-lbl">Total</span></div>' +
+    '<div class="stat-card s-green"><span class="stat-num">'  + c("received")          + '</span><span class="stat-lbl">Received</span></div>' +
+    '<div class="stat-card s-amber"><span class="stat-num">'  + c("pending")           + '</span><span class="stat-lbl">Pending</span></div>' +
+    '<div class="stat-card s-amber"><span class="stat-num">'  + c("under_repair")      + '</span><span class="stat-lbl">Under Repair</span></div>' +
+    '<div class="stat-card s-teal"><span class="stat-num">'   + c("repair_completed")  + '</span><span class="stat-lbl">Completed</span></div>' +
+    '<div class="stat-card s-purple"><span class="stat-num">' + c("dispatched")        + '</span><span class="stat-lbl">Dispatched</span></div>' +
+    '<div class="stat-card s-red"><span class="stat-num">'    + c("obsolete")          + '</span><span class="stat-lbl">Obsolete</span></div>';
+}
+
+function renderFaultList() {
+  const c = document.getElementById("fault-reports-list");
+  if (!faultReports.length) { c.innerHTML = '<div class="empty-state">📭 No fault reports found.</div>'; return; }
+  c.innerHTML = faultReports.map(r =>
+    '<div class="report-card" id="card-' + r.ref + '">' +
+      '<div class="report-meta"><span class="report-ref">' + escHtml(r.ref) + '</span>' +
+      '<span class="report-time">' + (r.timestamp ? new Date(r.timestamp).toLocaleString() : "") + '</span></div>' +
+      '<div class="report-name">' + escHtml(r.equipment) + '</div>' +
+      '<div class="report-detail">🏥 ' + escHtml(r.facility) + ' &nbsp;·&nbsp; 📍 ' + escHtml(r.district) + ' &nbsp;·&nbsp; ' + escHtml(r.ftype) + '</div>' +
+      (r.unit ? '<div class="report-detail">🏷 Unit: ' + escHtml(r.unit) + '</div>' : '') +
+      '<div class="report-detail" style="margin-top:4px">' + escHtml(r.desc) + '</div>' +
+      '<div class="report-contact">👤 ' + escHtml(r.reporter) + ' &nbsp;|&nbsp; 📞 ' + escHtml(r.contact) + '</div>' +
+      (r.remarks ? '<div class="report-contact">📝 ' + escHtml(r.remarks) + '</div>' : '') +
+      '<div class="status-stepper"><div class="stepper-label">Update Status</div>' +
+      '<div class="stepper-steps">' + buildStepperHTML(r.ref, r.status) + '</div></div>' +
+    '</div>'
+  ).join("");
+}
+
+function buildStepperHTML(ref, currentStatus) {
+  const ci = STATUS_STEPS.findIndex(s => s.key === normaliseStatus(currentStatus));
+  return STATUS_STEPS.map(function(s, i) {
+    const cls = i === ci ? "step-pill active" : i < ci ? "step-pill done" : "step-pill";
+    return '<button class="' + cls + '" onclick="updateFaultStatus(\'' + ref + '\',\'' + s.label + '\')">' +
+           '<span class="step-dot"></span>' + s.icon + ' ' + s.label + '</button>';
+  }).join("");
+}
+
+function updateFaultStatus(ref, newStatus) {
+  const idx = faultReports.findIndex(r => r.ref === ref);
+  if (idx !== -1) faultReports[idx].status = newStatus;
+  const card = document.getElementById("card-" + ref);
+  if (card) card.querySelector(".stepper-steps").innerHTML = buildStepperHTML(ref, newStatus);
+  renderStats();
+  gasRequest(
+    { action: "updateStatus", ref: ref, status: newStatus, token: adminToken },
+    function() { /* success — Sheet updated */ },
+    function(err) { alert("Status update failed: " + err + "\nPlease try again."); }
+  );
+}
+
+function renderInstallList() {
+  const c = document.getElementById("install-list");
+  if (!installReports.length) { c.innerHTML = '<div class="empty-state">📭 No installation requests found.</div>'; return; }
+  c.innerHTML = installReports.map(r =>
+    '<div class="report-card"><div class="report-meta">' +
+    '<span class="report-ref">' + escHtml(r.ref) + '</span>' +
+    '<span class="report-time">' + (r.timestamp ? new Date(r.timestamp).toLocaleString() : "") + '</span></div>' +
+    '<div class="report-name">' + escHtml(r.etype) + ' — Qty: ' + escHtml(r.qty) + '</div>' +
+    '<div class="report-detail">🏥 ' + escHtml(r.facility) + ' &nbsp;·&nbsp; 📍 ' + escHtml(r.district) + '</div>' +
+    (r.date ? '<div class="report-detail">📅 Preferred: ' + escHtml(r.date) + '</div>' : '') +
+    '<div class="report-contact">👤 ' + escHtml(r.name) + (r.grade ? ' (' + escHtml(r.grade) + ')' : '') + ' &nbsp;|&nbsp; 📞 ' + escHtml(r.contact) + '</div>' +
+    '<div class="report-detail" style="font-size:.74rem;color:var(--text3);margin-top:4px">Status: ' + escHtml(r.status) + '</div></div>'
+  ).join("");
+}
+
+function renderEquipList() {
+  const c = document.getElementById("equip-list");
+  if (!equipReports.length) { c.innerHTML = '<div class="empty-state">📭 No equipment requests found.</div>'; return; }
+  c.innerHTML = equipReports.map(r =>
+    '<div class="report-card"><div class="report-meta">' +
+    '<span class="report-ref">' + escHtml(r.ref) + '</span>' +
+    '<span class="report-time">' + (r.timestamp ? new Date(r.timestamp).toLocaleString() : "") + '</span></div>' +
+    '<div class="report-name">' + escHtml(r.etype) + ' — Qty: ' + escHtml(r.qty) + '</div>' +
+    '<div class="report-detail">🏥 ' + escHtml(r.facility) + ' &nbsp;·&nbsp; 📍 ' + escHtml(r.district) + '</div>' +
+    '<div class="report-detail" style="margin-top:4px">' + escHtml(r.reason) + '</div>' +
+    '<div class="report-contact">👤 ' + escHtml(r.name) + (r.grade ? ' (' + escHtml(r.grade) + ')' : '') + ' &nbsp;|&nbsp; 📞 ' + escHtml(r.contact) + '</div>' +
+    '<div class="report-detail" style="font-size:.74rem;color:var(--text3);margin-top:4px">Status: ' + escHtml(r.status) + '</div></div>'
+  ).join("");
+}
+
+function openGoogleSheet() {
+  if (!SHEET_ID || SHEET_ID === "PASTE_YOUR_SPREADSHEET_ID_HERE") {
+    alert("Update SHEET_ID at the top of CEU_Dashboard.html with your Google Sheet ID.");
+    return;
+  }
+  window.open("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/edit", "_blank");
+}
+
+// ═══════════════════════════════════════════════════════════════
 // VALIDATION HELPERS
-// ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 function setErr(id, msg) {
   const el = document.getElementById("err-" + id);
-  if (el) { el.textContent = msg; }
+  if (el) el.textContent = msg;
   const inp = document.getElementById(id);
   if (inp) inp.classList.toggle("err", !!msg);
 }
 function clearErrors(ids) { ids.forEach(id => setErr(id, "")); }
-
 function req(id, label) {
   const el = document.getElementById(id);
   if (!el || !el.value.trim()) { setErr(id, label + " is required."); return false; }
   return true;
 }
-
-// ─────────────────────────────────────────────────
-// REF CODE
-// ─────────────────────────────────────────────────
-function genRef(prefix) {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let c = "";
-  for (let i=0;i<8;i++) c += chars[Math.floor(Math.random()*chars.length)];
-  return `${prefix}-${c.slice(0,4)}-${c.slice(4)}`;
+// ─────────────────────────────────────────────────────────────────────
+// PHONE VALIDATION — Ghana format
+// Rules:
+//   1. Digits only — no letters, spaces, dashes, or symbols
+//   2. Exactly 10 digits
+//   3. Must start with 0
+//   4. Second digit must be 2–9 (covers MTN, Telecel, AirtelTigo, Glo)
+//      Valid prefixes: 020–029, 030–039 (future), 050–059
+//      Invalid: 00X, 01X (not assigned to any Ghana operator)
+// ─────────────────────────────────────────────────────────────────────
+function stripNonDigits(val) {
+  return (val || "").replace(/\D/g, "");
 }
 
-// ─────────────────────────────────────────────────
-// IMAGE PREVIEW
-// ─────────────────────────────────────────────────
-function previewImg(input, previewId) {
-  const prev = document.getElementById(previewId);
-  if (!input.files || !input.files[0]) { prev.style.display="none"; return; }
-  const reader = new FileReader();
-  reader.onload = e => { prev.src = e.target.result; prev.style.display = "block"; };
-  reader.readAsDataURL(input.files[0]);
+function livePhoneInput(id) {
+  // Called on every keystroke — strips non-digits and gives instant feedback
+  const input = document.getElementById(id);
+  const raw   = input.value;
+  const clean = stripNonDigits(raw);
+
+  // If user typed non-digit characters, remove them silently
+  if (raw !== clean) input.value = clean;
+
+  // Live feedback as user types — else-if chain prevents flicker between states
+  const len = clean.length;
+  if (len === 0) {
+    setErr(id, "");                                             // blank — wait for submit
+  } else if (clean[0] !== "0") {
+    setErr(id, "Ghana numbers must start with 0 (e.g. 0244000000)");
+  } else if (len >= 2 && (clean[1] === "0" || clean[1] === "1")) {
+    setErr(id, "Invalid network prefix. Valid: 020–029, 050–059, 023–028, etc.");
+  } else if (len > 10) {
+    // maxlength=10 prevents this in most cases, but paste/autofill can bypass it
+    setErr(id, "Too many digits — Ghana numbers are exactly 10 digits.");
+  } else if (len < 10) {
+    setErr(id, "Keep typing… (" + len + "/10 digits)");
+  } else {
+    setErr(id, "");                                             // len===10 and valid
+  }
 }
 
-// ─────────────────────────────────────────────────
-// MODAL
-// ─────────────────────────────────────────────────
-function showModal(ref, tabLabel) {
+function validPhone(id) {
+  // Always validate the STRIPPED value (digits only), not raw input.value.
+  // livePhoneInput already strips non-digits on keypress, but autofill and
+  // programmatic setting could bypass that — stripping here makes submit safe.
+  const val = stripNonDigits(document.getElementById(id).value);
+
+  if (val.length === 0) {
+    setErr(id, "Contact number is required.");
+    return false;
+  }
+  if (val.length !== 10) {
+    setErr(id, "Must be exactly 10 digits (you entered " + val.length + ").");
+    return false;
+  }
+  if (val[0] !== "0") {
+    setErr(id, "Ghana numbers must start with 0 (e.g. 0244000000).");
+    return false;
+  }
+  if (val[1] === "0" || val[1] === "1") {
+    setErr(id, "Invalid network prefix — valid prefixes: 020–029, 050–059, 023–028.");
+    return false;
+  }
+  setErr(id, "");
+  return true;
+}
+function updateCharCount(textareaId, countId, max) {
+  const len = (document.getElementById(textareaId).value || "").length;
+  const el  = document.getElementById(countId);
+  if (el) { el.textContent = len; el.style.color = len > max * 0.9 ? "var(--amber)" : "var(--text3)"; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUBMIT ENGINE — waits for GAS confirmation before showing modal
+// Disables button during submission to prevent double-submit
+// ═══════════════════════════════════════════════════════════════
+function setSubmitting(btnId, isSubmitting) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = isSubmitting;
+  if (isSubmitting) {
+    btn._origHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner">⏳</span> Submitting…';
+  } else {
+    btn.innerHTML = btn._origHTML || btn.innerHTML;
+  }
+}
+
+function submitFault() {
+  clearErrors(["f-facility","f-district","f-ftype","f-equip","f-reporter","f-contact","f-desc"]);
+  let ok = true;
+  ok = req("f-facility","Facility name")      && ok;
+  ok = req("f-district","District")           && ok;
+  ok = req("f-ftype","Facility type")         && ok;
+  ok = req("f-equip","Equipment name")        && ok;
+  ok = req("f-reporter","Reporter name")      && ok;
+  ok = req("f-desc","Fault description")      && ok;
+  ok = validPhone("f-contact")               && ok;
+  if (!ok) return;
+
+  if (!navigator.onLine) { showErrorModal("You are offline. Please reconnect and try again."); return; }
+
+  setSubmitting("btn-fault", true);
+  const ref = genRef("FR");
+  gasRequest(
+    {
+      action:    "submitFault",
+      ref:       ref,
+      facility:  document.getElementById("f-facility").value.trim(),
+      district:  document.getElementById("f-district").value,
+      ftype:     document.getElementById("f-ftype").value,
+      unit:      document.getElementById("f-unit").value.trim(),
+      equipment: document.getElementById("f-equip").value.trim(),
+      desc:      document.getElementById("f-desc").value.trim(),
+      reporter:  document.getElementById("f-reporter").value.trim(),
+      contact:   document.getElementById("f-contact").value.trim(),
+      remarks:   document.getElementById("f-remarks").value.trim()
+    },
+    function(result) {
+      setSubmitting("btn-fault", false);
+      pendingReset = resetFaultForm;
+      showModal(result.refCode || ref, "Fault Report");
+    },
+    function(err) {
+      setSubmitting("btn-fault", false);
+      showErrorModal(err);
+    },
+    20000
+  );
+}
+
+function resetFaultForm() {
+  ["f-facility","f-unit","f-equip","f-reporter","f-contact","f-desc","f-remarks"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  ["f-district","f-ftype"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("f-img").value = "";
+  const p = document.getElementById("img-preview");
+  p.style.display = "none"; p.src = "";
+  document.getElementById("f-desc-count").textContent = "0";
+}
+
+function submitInstall() {
+  clearErrors(["i-facility","i-district","i-ftype","i-etype","i-qty","i-name","i-contact"]);
+  let ok = true;
+  ok = req("i-facility","Facility name")  && ok;
+  ok = req("i-district","District")       && ok;
+  ok = req("i-ftype","Facility type")     && ok;
+  ok = req("i-etype","Equipment type")    && ok;
+  ok = req("i-qty","Quantity")            && ok;
+  ok = req("i-name","Requester name")     && ok;
+  ok = validPhone("i-contact")           && ok;
+  if (!ok) return;
+
+  if (!navigator.onLine) { showErrorModal("You are offline. Please reconnect and try again."); return; }
+
+  setSubmitting("btn-install", true);
+  const ref = genRef("IR");
+  gasRequest(
+    {
+      action:   "submitInstall",
+      ref:      ref,
+      facility: document.getElementById("i-facility").value.trim(),
+      district: document.getElementById("i-district").value,
+      ftype:    document.getElementById("i-ftype").value,
+      etype:    document.getElementById("i-etype").value,
+      qty:      document.getElementById("i-qty").value,
+      date:     document.getElementById("i-date").value,
+      name:     document.getElementById("i-name").value.trim(),
+      grade:    document.getElementById("i-grade").value.trim(),
+      contact:  document.getElementById("i-contact").value.trim()
+    },
+    function(result) {
+      setSubmitting("btn-install", false);
+      pendingReset = function() {
+        ["i-facility","i-name","i-grade","i-contact","i-date"].forEach(id => document.getElementById(id).value = "");
+        ["i-district","i-ftype","i-etype","i-qty"].forEach(id => document.getElementById(id).value = "");
+      };
+      showModal(result.refCode || ref, "Installation Request");
+    },
+    function(err) { setSubmitting("btn-install", false); showErrorModal(err); },
+    20000
+  );
+}
+
+function submitEquip() {
+  clearErrors(["e-facility","e-district","e-etype","e-qty","e-name","e-contact","e-reason"]);
+  let ok = true;
+  ok = req("e-facility","Facility name")   && ok;
+  ok = req("e-district","District")        && ok;
+  ok = req("e-etype","Equipment type")     && ok;
+  ok = req("e-qty","Quantity")             && ok;
+  ok = req("e-name","Your name")           && ok;
+  ok = req("e-reason","Reason")            && ok;
+  ok = validPhone("e-contact")            && ok;
+  if (!ok) return;
+
+  if (!navigator.onLine) { showErrorModal("You are offline. Please reconnect and try again."); return; }
+
+  setSubmitting("btn-equip", true);
+  const ref = genRef("ER");
+  gasRequest(
+    {
+      action:   "submitEquip",
+      ref:      ref,
+      facility: document.getElementById("e-facility").value.trim(),
+      district: document.getElementById("e-district").value,
+      etype:    document.getElementById("e-etype").value,
+      qty:      document.getElementById("e-qty").value,
+      reason:   document.getElementById("e-reason").value.trim(),
+      name:     document.getElementById("e-name").value.trim(),
+      contact:  document.getElementById("e-contact").value.trim(),
+      grade:    document.getElementById("e-grade").value.trim()
+    },
+    function(result) {
+      setSubmitting("btn-equip", false);
+      pendingReset = function() {
+        ["e-facility","e-name","e-grade","e-contact","e-reason"].forEach(id => document.getElementById(id).value = "");
+        ["e-district","e-etype","e-qty"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("e-reason-count").textContent = "0";
+      };
+      showModal(result.refCode || ref, "Equipment Request");
+    },
+    function(err) { setSubmitting("btn-equip", false); showErrorModal(err); },
+    20000
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════════════
+function showModal(ref, label) {
   document.getElementById("modal-ref-code").textContent = ref;
   document.getElementById("modal-body-text").innerHTML =
-    `Your <strong>${tabLabel}</strong> has been submitted successfully. Keep your reference code for tracking.`;
+    'Your <strong>' + label + '</strong> was confirmed by the server and saved to Google Sheets.<br>Keep your reference code safe for tracking.';
+  document.getElementById("ref-copy-tip").textContent = "Tap the code above to copy it";
   document.getElementById("success-modal").classList.add("open");
 }
 function closeModal() {
@@ -1070,459 +1402,144 @@ function modalAnother() {
   document.getElementById("success-modal").classList.remove("open");
   if (pendingReset) { pendingReset(); pendingReset = null; }
 }
+function copyRef() {
+  const code = document.getElementById("modal-ref-code").textContent;
+  const tip  = document.getElementById("ref-copy-tip");
 
-// ─────────────────────────────────────────────────
-// SUBMIT: FAULT REPORT
-// ─────────────────────────────────────────────────
-function submitFault() {
-  clearErrors(["f-facility","f-district","f-ftype","f-equip","f-reporter","f-contact","f-desc"]);
-  let ok = true;
-  ok = req("f-facility","Facility name") && ok;
-  ok = req("f-district","District") && ok;
-  ok = req("f-ftype","Facility type") && ok;
-  ok = req("f-equip","Equipment name") && ok;
-  ok = req("f-reporter","Reporter name") && ok;
-  ok = req("f-contact","Contact number") && ok;
-  ok = req("f-desc","Fault description") && ok;
-  if (!ok) return;
-
-  const ref = genRef("FR");
-  const imgEl = document.getElementById("img-preview");
-  const record = {
-    ref, type: "fault_report",
-    facility:    document.getElementById("f-facility").value.trim(),
-    district:    document.getElementById("f-district").value,
-    ftype:       document.getElementById("f-ftype").value,
-    unit:        document.getElementById("f-unit").value.trim(),
-    equipment:   document.getElementById("f-equip").value.trim(),
-    desc:        document.getElementById("f-desc").value.trim(),
-    reporter:    document.getElementById("f-reporter").value.trim(),
-    contact:     document.getElementById("f-contact").value.trim(),
-    remarks:     document.getElementById("f-remarks").value.trim(),
-    image:       imgEl.style.display !== "none" ? imgEl.src : null,
-    status:      "received",
-    timestamp:   new Date().toISOString()
-  };
-
-  faultReports.unshift(record);
-  sendToGAS(record, "submitFault");
-
-  pendingReset = resetFaultForm;
-  showModal(ref, "Fault Report");
-}
-
-function resetFaultForm() {
-  ["f-facility","f-unit","f-equip","f-reporter","f-contact","f-desc","f-remarks"].forEach(id=>{
-    document.getElementById(id).value="";
-  });
-  document.getElementById("f-district").value="";
-  document.getElementById("f-ftype").value="";
-  document.getElementById("f-img").value="";
-  const prev = document.getElementById("img-preview");
-  prev.style.display="none"; prev.src="";
-}
-
-// ─────────────────────────────────────────────────
-// SUBMIT: INSTALLATION
-// ─────────────────────────────────────────────────
-function submitInstall() {
-  clearErrors(["i-facility","i-district","i-ftype","i-etype","i-qty","i-name","i-contact"]);
-  let ok = true;
-  ok = req("i-facility","Facility name") && ok;
-  ok = req("i-district","District") && ok;
-  ok = req("i-ftype","Facility type") && ok;
-  ok = req("i-etype","Equipment type") && ok;
-  ok = req("i-qty","Quantity") && ok;
-  ok = req("i-name","Requester name") && ok;
-  ok = req("i-contact","Contact number") && ok;
-  if (!ok) return;
-
-  const ref = genRef("IR");
-  const record = {
-    ref, type: "installation_request",
-    facility:  document.getElementById("i-facility").value.trim(),
-    district:  document.getElementById("i-district").value,
-    ftype:     document.getElementById("i-ftype").value,
-    etype:     document.getElementById("i-etype").value,
-    qty:       document.getElementById("i-qty").value,
-    date:      document.getElementById("i-date").value,
-    name:      document.getElementById("i-name").value.trim(),
-    grade:     document.getElementById("i-grade").value.trim(),
-    contact:   document.getElementById("i-contact").value.trim(),
-    status:    "pending",
-    timestamp: new Date().toISOString()
-  };
-
-  installReports.unshift(record);
-  sendToGAS(record, "submitInstall");
-
-  pendingReset = () => {
-    ["i-facility","i-name","i-grade","i-contact","i-date"].forEach(id => document.getElementById(id).value="");
-    ["i-district","i-ftype","i-etype","i-qty"].forEach(id => document.getElementById(id).value="");
-  };
-  showModal(ref, "Installation Request");
-}
-
-// ─────────────────────────────────────────────────
-// SUBMIT: EQUIPMENT REQUEST
-// ─────────────────────────────────────────────────
-function submitEquip() {
-  clearErrors(["e-facility","e-district","e-etype","e-qty","e-name","e-contact","e-reason"]);
-  let ok = true;
-  ok = req("e-facility","Facility name") && ok;
-  ok = req("e-district","District") && ok;
-  ok = req("e-etype","Equipment type") && ok;
-  ok = req("e-qty","Quantity") && ok;
-  ok = req("e-name","Your name") && ok;
-  ok = req("e-contact","Contact number") && ok;
-  ok = req("e-reason","Reason for request") && ok;
-  if (!ok) return;
-
-  const ref = genRef("ER");
-  const record = {
-    ref, type: "equipment_request",
-    facility:  document.getElementById("e-facility").value.trim(),
-    district:  document.getElementById("e-district").value,
-    etype:     document.getElementById("e-etype").value,
-    qty:       document.getElementById("e-qty").value,
-    reason:    document.getElementById("e-reason").value.trim(),
-    name:      document.getElementById("e-name").value.trim(),
-    contact:   document.getElementById("e-contact").value.trim(),
-    grade:     document.getElementById("e-grade").value.trim(),
-    status:    "pending",
-    timestamp: new Date().toISOString()
-  };
-
-  equipReports.unshift(record);
-  sendToGAS(record, "submitEquip");
-
-  pendingReset = () => {
-    ["e-facility","e-name","e-grade","e-contact","e-reason"].forEach(id => document.getElementById(id).value="");
-    ["e-district","e-etype","e-qty"].forEach(id => document.getElementById(id).value="");
-  };
-  showModal(ref, "Equipment Request");
-}
-
-// ─────────────────────────────────────────────────
-// SEND TO GOOGLE APPS SCRIPT
-// Uses a hidden <img> / script-tag trick to send
-// data via GET — this bypasses CORS entirely and
-// actually reaches the GAS Web App every time.
-// ─────────────────────────────────────────────────
-function sendToGAS(data, action) {
-  // Build query string from data object
-  const params = new URLSearchParams();
-  params.set("action", action || data.action || "submitFault");
-  Object.keys(data).forEach(k => {
-    if (k !== "image" && k !== "imagePreview" && data[k] !== null && data[k] !== undefined) {
-      params.set(k, String(data[k]));
-    }
-  });
-
-  const url = GAS_URL + "?" + params.toString();
-
-  // Use fetch without mode:no-cors — GAS GET returns JSON directly
-  fetch(url)
-    .then(res => res.json())
-    .then(result => {
-      if (result.ok) {
-        console.log("✅ GAS confirmed:", result);
-      } else {
-        console.warn("⚠️ GAS returned error:", result.error);
-      }
-    })
-    .catch(err => {
-      // Fallback: inject a script tag (works even if fetch is blocked by CORS)
-      console.warn("fetch failed, trying script tag:", err.message);
-      const cbName = "gasCallback_" + Date.now();
-      window[cbName] = function(result) {
-        console.log("✅ GAS script-tag response:", result);
-        delete window[cbName];
-        document.getElementById("gas-script-" + cbName) &&
-          document.getElementById("gas-script-" + cbName).remove();
-      };
-      const script = document.createElement("script");
-      script.id  = "gas-script-" + cbName;
-      script.src = url + "&callback=" + cbName;
-      script.onerror = () => console.warn("Script tag also failed — check GAS_URL.");
-      document.body.appendChild(script);
+  // navigator.clipboard requires a secure context (HTTPS or localhost).
+  // Fall back to the legacy execCommand approach for HTTP environments
+  // such as hospital intranets or local test servers.
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(code).then(function() {
+      tip.textContent = "✅ Copied to clipboard!";
+    }).catch(function() {
+      tip.textContent = "Could not copy — please select and copy the code manually.";
     });
-}
-
-// Ping GAS on page load to confirm connection
-function pingGAS() {
-  const indicator = document.getElementById("gas-status");
-  if (!indicator) return;
-  if (GAS_URL.includes("https://script.google.com/home/projects/1dIHwgSlFUtReD7zOCvmJssANxtYLbALyOc1wqCgzhNqaB8CLyifQI9uS/edit")) {
-    indicator.textContent = "⚠️ GAS URL not set";
-    indicator.style.color = "#b7770d";
-    return;
-  }
-  fetch(GAS_URL + "?action=ping")
-    .then(r => r.json())
-    .then(d => {
-      indicator.textContent = d.ok ? "🟢 Connected to Google Sheets" : "🔴 GAS error";
-      indicator.style.color = d.ok ? "#117a65" : "#c0392b";
-    })
-    .catch(() => {
-      indicator.textContent = "🔴 Cannot reach GAS — check URL";
-      indicator.style.color = "#c0392b";
-    });
-}
-setTimeout(pingGAS, 800);
-
-// ─────────────────────────────────────────────────
-// OPEN GOOGLE SHEET DIRECTLY
-// ─────────────────────────────────────────────────
-function openGoogleSheet() {
-  var sheetId = "";
-  // Extract sheet ID from GAS URL if possible, or use stored ID
-  // Admin must set SHEET_ID below to match their Google Sheet
-  var SHEET_ID = "1kFbir8GNGqDWVSgJpy6vxZfBpUKI-3rIoFZ3ytpeyeA"; // ← same ID as in Code.gs
-  if (SHEET_ID && SHEET_ID !== "1kFbir8GNGqDWVSgJpy6vxZfBpUKI-3rIoFZ3ytpeyeA") {
-    window.open("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/edit", "_blank");
   } else {
-    alert("To enable this button, open CEU_Dashboard.html in a text editor and replace\n\nPASTE_YOUR_SPREADSHEET_ID_HERE\n\nin the openGoogleSheet() function with your actual Google Sheet ID.");
+    // Legacy fallback — works on HTTP and older browsers
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = code;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      tip.textContent = "✅ Copied to clipboard!";
+    } catch(e) {
+      tip.textContent = "Please copy the code manually: " + code;
+    }
   }
 }
-
-// ─────────────────────────────────────────────────
-// ADMIN: STATS (driven by live faultReports array)
-// ─────────────────────────────────────────────────
-function normaliseStatus(s) {
-  return (s || "").toLowerCase().replace(/ /g, "_");
+function showErrorModal(msg) {
+  document.getElementById("error-modal-body").textContent = msg || "An error occurred. Please try again.";
+  document.getElementById("error-modal").classList.add("open");
+}
+function closeErrorModal() {
+  document.getElementById("error-modal").classList.remove("open");
 }
 
-function renderStats() {
-  const total      = faultReports.length;
-  const received   = faultReports.filter(r => normaliseStatus(r.status) === "received").length;
-  const pending    = faultReports.filter(r => normaliseStatus(r.status) === "pending").length;
-  const repair     = faultReports.filter(r => normaliseStatus(r.status) === "under_repair").length;
-  const done       = faultReports.filter(r => normaliseStatus(r.status) === "repair_completed").length;
-  const dispatched = faultReports.filter(r => normaliseStatus(r.status) === "dispatched").length;
-  const obsolete   = faultReports.filter(r => normaliseStatus(r.status) === "obsolete").length;
-
-  document.getElementById("stats-grid").innerHTML =
-    '<div class="stat-card s-blue"><span class="stat-num">'  + total      + '</span><span class="stat-lbl">Total Reports</span></div>' +
-    '<div class="stat-card s-green"><span class="stat-num">' + received   + '</span><span class="stat-lbl">Received</span></div>' +
-    '<div class="stat-card s-amber"><span class="stat-num">' + pending    + '</span><span class="stat-lbl">Pending</span></div>' +
-    '<div class="stat-card s-amber"><span class="stat-num">' + repair     + '</span><span class="stat-lbl">Under Repair</span></div>' +
-    '<div class="stat-card s-teal"><span class="stat-num">'  + done       + '</span><span class="stat-lbl">Completed</span></div>' +
-    '<div class="stat-card s-blue"><span class="stat-num">'  + dispatched + '</span><span class="stat-lbl">Dispatched</span></div>' +
-    '<div class="stat-card s-red"><span class="stat-num">'   + obsolete   + '</span><span class="stat-lbl">Obsolete</span></div>';
+// ═══════════════════════════════════════════════════════════════
+// IMAGE PREVIEW
+// ═══════════════════════════════════════════════════════════════
+function previewImg(input, previewId) {
+  const prev = document.getElementById(previewId);
+  if (!input.files || !input.files[0]) { prev.style.display = "none"; return; }
+  const reader = new FileReader();
+  reader.onload = function(e) { prev.src = e.target.result; prev.style.display = "block"; };
+  reader.readAsDataURL(input.files[0]);
 }
 
-// ─────────────────────────────────────────────────
-// ADMIN: FAULT REPORTS LIST
-// ─────────────────────────────────────────────────
-function renderFaultList() {
-  const container = document.getElementById("fault-reports-list");
-  if (!faultReports.length) {
-    container.innerHTML = '<div class="empty-state">📭 No fault reports found in Google Sheets.</div>'; return;
-  }
-  container.innerHTML = faultReports.map(r => `
-    <div class="report-card" id="card-${r.ref}">
-      <div class="report-meta">
-        <span class="report-ref">${r.ref}</span>
-        <span class="report-time">${r.timestamp ? new Date(r.timestamp).toLocaleString() : ""}</span>
-      </div>
-      <div class="report-name">${r.equipment}</div>
-      <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district} &nbsp;·&nbsp; ${r.ftype}</div>
-      ${r.unit    ? `<div class="report-detail">🏷 Unit: ${r.unit}</div>` : ""}
-      <div class="report-detail" style="margin-top:4px;">${r.desc}</div>
-      <div class="report-contact">👤 ${r.reporter} &nbsp;|&nbsp; 📞 ${r.contact}</div>
-      ${r.remarks ? `<div class="report-contact">📝 ${r.remarks}</div>` : ""}
-      <div class="status-stepper">
-        <div class="stepper-label">Update Status</div>
-        <div class="stepper-steps">${buildStepperHTML(r.ref, r.status)}</div>
-      </div>
-    </div>
-  `).join("");
+// ═══════════════════════════════════════════════════════════════
+// REF CODE GENERATOR
+// Uses timestamp component + random for near-zero collision rate
+// ═══════════════════════════════════════════════════════════════
+function genRef(prefix) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const ts    = Date.now().toString(36).toUpperCase().slice(-4);
+  let rand = "";
+  for (let i = 0; i < 4; i++) rand += chars[Math.floor(Math.random() * chars.length)];
+  return prefix + "-" + ts + "-" + rand;
 }
 
-function buildStepperHTML(ref, currentStatus) {
-  const currentIdx = STATUS_STEPS.findIndex(s => s.key === normaliseStatus(currentStatus));
-  return STATUS_STEPS.map((s, i) => {
-    const isDone   = i < currentIdx;
-    const isActive = i === currentIdx;
-    const cls = isActive ? "active" : isDone ? "done" : "";
-    return `<button class="step-pill ${cls}" onclick="updateFaultStatus('${ref}','${s.key}')">
-      <span class="step-dot"></span>${s.icon} ${s.label}
-    </button>`;
-  }).join("");
+// ═══════════════════════════════════════════════════════════════
+// XSS PROTECTION — escape HTML before inserting into DOM
+// ═══════════════════════════════════════════════════════════════
+function escHtml(str) {
+  return String(str || "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
-function updateFaultStatus(ref, newStatus) {
-  const idx = faultReports.findIndex(r => r.ref === ref);
-  if (idx !== -1) faultReports[idx].status = newStatus;
-
-  const card = document.getElementById("card-" + ref);
-  if (card) card.querySelector(".stepper-steps").innerHTML = buildStepperHTML(ref, newStatus);
-  renderStats();
-
-  // Write change back to Google Sheet
-  sendToGAS({ ref: ref, status: newStatus }, "updateStatus");
-}
-
-// ─────────────────────────────────────────────────
-// ADMIN: INSTALL LIST
-// ─────────────────────────────────────────────────
-function renderInstallList() {
-  const container = document.getElementById("install-list");
-  if (!installReports.length) {
-    container.innerHTML = '<div class="empty-state">📭 No installation requests found in Google Sheets.</div>'; return;
-  }
-  container.innerHTML = installReports.map(r => `
-    <div class="report-card">
-      <div class="report-meta">
-        <span class="report-ref">${r.ref}</span>
-        <span class="report-time">${r.timestamp ? new Date(r.timestamp).toLocaleString() : ""}</span>
-      </div>
-      <div class="report-name">${r.etype} — Qty: ${r.qty}</div>
-      <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district} &nbsp;·&nbsp; ${r.ftype}</div>
-      ${r.date ? `<div class="report-detail">📅 Preferred Date: ${r.date}</div>` : ""}
-      <div class="report-contact">👤 ${r.name}${r.grade ? " ("+r.grade+")" : ""} &nbsp;|&nbsp; 📞 ${r.contact}</div>
-      <div class="report-detail" style="margin-top:4px;font-size:0.75rem;color:var(--text3);">Status: ${r.status}</div>
-    </div>
-  `).join("");
-}
-
-// ─────────────────────────────────────────────────
-// ADMIN: EQUIP REQUEST LIST
-// ─────────────────────────────────────────────────
-function renderEquipList() {
-  const container = document.getElementById("equip-list");
-  if (!equipReports.length) {
-    container.innerHTML = '<div class="empty-state">📭 No equipment requests found in Google Sheets.</div>'; return;
-  }
-  container.innerHTML = equipReports.map(r => `
-    <div class="report-card">
-      <div class="report-meta">
-        <span class="report-ref">${r.ref}</span>
-        <span class="report-time">${r.timestamp ? new Date(r.timestamp).toLocaleString() : ""}</span>
-      </div>
-      <div class="report-name">${r.etype} — Qty: ${r.qty}</div>
-      <div class="report-detail">🏥 ${r.facility} &nbsp;·&nbsp; 📍 ${r.district}</div>
-      <div class="report-detail" style="margin-top:4px;">${r.reason}</div>
-      <div class="report-contact">👤 ${r.name}${r.grade ? " ("+r.grade+")" : ""} &nbsp;|&nbsp; 📞 ${r.contact}</div>
-      <div class="report-detail" style="margin-top:4px;font-size:0.75rem;color:var(--text3);">Status: ${r.status}</div>
-    </div>
-  `).join("");
-}
-// ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 // PUBLIC STATUS CHECKER
-// Anyone with a ref code can look up their status
-// ─────────────────────────────────────────────────
-const STATUS_META = {
-  received:         { label: "Received by Engineering Unit", icon: "📥", cls: "badge-received" },
-  pending:          { label: "Pending Assessment",           icon: "⏳", cls: "badge-pending" },
-  under_repair:     { label: "Under Repair",                 icon: "🔧", cls: "badge-under_repair" },
-  repair_completed: { label: "Repair Completed",             icon: "✅", cls: "badge-repair_completed" },
-  dispatched:       { label: "Dispatched",                   icon: "🚚", cls: "badge-dispatched" },
-  obsolete:         { label: "Declared Obsolete",            icon: "⛔", cls: "badge-obsolete" }
-};
-
+// ═══════════════════════════════════════════════════════════════
 function checkStatus() {
   const raw = document.getElementById("track-ref-input").value.trim().toUpperCase();
-  if (!raw) {
-    document.getElementById("track-ref-input").focus();
+  if (!raw) { document.getElementById("track-ref-input").focus(); return; }
+
+  // Validate format before hitting GAS — ref codes are PREFIX-XXXX-XXXX (11+ chars)
+  // This prevents pointless server calls for single characters or garbage input.
+  if (raw.length < 8 || raw.split("-").length < 3) {
+    document.getElementById("track-result").style.display   = "block";
+    document.getElementById("track-loading").style.display  = "none";
+    document.getElementById("track-found").style.display    = "none";
+    document.getElementById("track-notfound").style.display = "block";
+    document.getElementById("track-notfound-msg").innerHTML =
+      "<strong>Invalid reference code format.</strong><br>" +
+      "<span style='font-size:.78rem;color:var(--text3)'>Codes look like <strong>FR-A3XK-7QPL</strong> — check and try again.</span>";
     return;
   }
 
-  // Show result area, hide sub-panels, show loading
-  document.getElementById("track-result").style.display    = "block";
-  document.getElementById("track-loading").style.display   = "block";
-  document.getElementById("track-notfound").style.display  = "none";
-  document.getElementById("track-found").style.display     = "none";
-  document.getElementById("track-btn").disabled            = true;
-  document.getElementById("track-btn").textContent         = "⏳ Checking…";
-
-  if (GAS_URL.includes("YOUR_SCRIPT_ID")) {
-    showTrackError("GAS URL not configured. Please contact the Clinical Engineering Unit.");
-    return;
-  }
-
-  // Use JSONP script-tag — same CORS-safe method used everywhere else
-  const cbName = "statusCB_" + Date.now();
-  const url    = GAS_URL + "?action=getStatus&ref=" + encodeURIComponent(raw) + "&callback=" + cbName;
-
-  const timer = setTimeout(function() {
-    delete window[cbName];
-    showTrackError("No response from server. Please try again or contact the Engineering Unit.");
-  }, 15000);
-
-  window[cbName] = function(result) {
-    clearTimeout(timer);
-    delete window[cbName];
-    const old = document.getElementById("status-cb-script");
-    if (old) old.remove();
-
-    document.getElementById("track-btn").disabled    = false;
-    document.getElementById("track-btn").textContent = "🔎 Check Status";
-    document.getElementById("track-loading").style.display = "none";
-
-    if (!result || !result.ok) {
-      showTrackError("An error occurred. Please try again.");
-      return;
-    }
-    if (!result.found) {
-      document.getElementById("track-notfound").style.display = "block";
-      return;
-    }
-    renderTrackResult(result);
-  };
-
-  const script    = document.createElement("script");
-  script.id       = "status-cb-script";
-  script.src      = url;
-  script.onerror  = function() {
-    clearTimeout(timer);
-    delete window[cbName];
-    showTrackError("Could not reach server. Check your connection and try again.");
-  };
-  document.body.appendChild(script);
-}
-
-function showTrackError(msg) {
-  document.getElementById("track-loading").style.display  = "none";
+  document.getElementById("track-result").style.display   = "block";
+  document.getElementById("track-loading").style.display  = "block";
+  document.getElementById("track-notfound").style.display = "none";
   document.getElementById("track-found").style.display    = "none";
-  document.getElementById("track-btn").disabled           = false;
-  document.getElementById("track-btn").textContent        = "🔎 Check Status";
-  const nf = document.getElementById("track-notfound");
-  nf.style.display = "block";
-  nf.querySelector("p").innerHTML = "<strong>" + msg + "</strong>";
+  document.getElementById("track-btn").disabled           = true;
+  document.getElementById("track-btn").textContent        = "⏳ Checking…";
+
+  gasRequest(
+    { action: "getStatus", ref: raw },
+    function(result) {
+      document.getElementById("track-btn").disabled    = false;
+      document.getElementById("track-btn").textContent = "🔎 Check Status";
+      document.getElementById("track-loading").style.display = "none";
+      if (!result.found) {
+        document.getElementById("track-notfound").style.display = "block";
+        document.getElementById("track-notfound-msg").innerHTML = "<strong>Reference code not found.</strong>";
+        return;
+      }
+      renderTrackResult(result);
+    },
+    function(err) {
+      document.getElementById("track-btn").disabled    = false;
+      document.getElementById("track-btn").textContent = "🔎 Check Status";
+      document.getElementById("track-loading").style.display  = "none";
+      document.getElementById("track-notfound").style.display = "block";
+      document.getElementById("track-notfound-msg").innerHTML = "<strong>" + escHtml(err) + "</strong>";
+    }
+  );
 }
 
 function renderTrackResult(result) {
   document.getElementById("track-found").style.display = "block";
+  document.getElementById("tr-ref").textContent       = result.ref      || "—";
+  document.getElementById("tr-facility").textContent  = result.facility  || "—";
+  document.getElementById("tr-equipment").textContent = result.equipment || (result.type !== "fault_report" ? result.type.replace(/_/g," ") : "—");
+  const upd = result.lastUpdated || result.timestamp || "";
+  document.getElementById("tr-updated").textContent   = upd ? new Date(upd).toLocaleString() : "—";
 
-  // Fill info cards
-  document.getElementById("tr-ref").textContent       = result.ref        || "—";
-  document.getElementById("tr-facility").textContent  = result.facility   || "—";
-  document.getElementById("tr-equipment").textContent = result.equipment  || (result.type === "installation_request" ? "Installation Request" : "Equipment Request");
-
-  const updRaw = result.lastUpdated || result.timestamp || "";
-  document.getElementById("tr-updated").textContent   = updRaw ? new Date(updRaw).toLocaleString() : "—";
-
-  // Build status progress steps
-  const currentKey = normaliseStatus(result.status);
-  const currentIdx = STATUS_STEPS.findIndex(function(s){ return s.key === currentKey; });
-
-  const stepsHTML = STATUS_STEPS.map(function(s, i) {
-    const isDone   = i < currentIdx;
-    const isActive = i === currentIdx;
-    const cls = isActive ? "sp-step sp-active" : isDone ? "sp-step sp-done" : "sp-step";
+  const ci = STATUS_STEPS.findIndex(s => s.key === normaliseStatus(result.status));
+  document.getElementById("tr-steps").innerHTML = STATUS_STEPS.map(function(s, i) {
+    const cls = i === ci ? "sp-step sp-active" : i < ci ? "sp-step sp-done" : "sp-step";
     return '<div class="' + cls + '"><span class="sp-dot"></span>' + s.icon + " " + s.label + "</div>";
   }).join("");
-  document.getElementById("tr-steps").innerHTML = stepsHTML;
 
-  // Status badge
-  const meta    = STATUS_META[currentKey] || { label: result.status || "Unknown", icon: "❓", cls: "" };
-  const badge   = document.getElementById("tr-badge");
+  const meta  = STATUS_META[normaliseStatus(result.status)] || { label: result.status || "Unknown", icon: "❓", cls: "" };
+  const badge = document.getElementById("tr-badge");
   badge.textContent = meta.icon + "  " + meta.label;
   badge.className   = "current-status-badge " + meta.cls;
 }
-
 </script>
 </body>
 </html>
