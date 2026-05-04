@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Clinical Engineering Equipment Management</title>
+<title>Medical Equipment Management Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -219,8 +219,8 @@ textarea{resize:vertical;min-height:100px}
   <div class="header-inner">
     <div class="header-logo">🏥</div>
     <div style="flex:1">
-      <div class="header-title">Medical Equipment Dashboard</div>
-      <div class="header-sub">Clinical Engineering Unit, Western Region Health Directorate, Ghana</div>
+      <div class="header-title">Medical Equipment Management Dashboard</div>
+      <div class="header-sub">Clinical Engineering Unit — Western Region Health Directorate, Ghana</div>
     </div>
     <div id="gas-status">⏳ Connecting…</div>
   </div>
@@ -229,7 +229,7 @@ textarea{resize:vertical;min-height:100px}
 <nav class="tab-nav">
   <div class="tab-nav-inner">
     <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Reporting</button>
-    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation Request</button>
+    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation</button>
     <button class="tab-btn" onclick="showTab('equip',this)">🏥 Equipment Request</button>
     <button class="tab-btn" onclick="showTab('admin',this)">🔐 Admin</button>
   </div>
@@ -773,7 +773,9 @@ function loadDistrictsFromGAS() {
           "Sekondi-Takoradi Metro","Ahanta West","Shama","Wassa East",
           "Wassa Amenfi East","Wassa Amenfi West","Wassa Amenfi Central",
           "Amenfi East","Mpohor","Tarkwa-Nsuaem","Prestea-Huni Valley",
-          "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East"
+          "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East",
+          "Bia East","Bia West","Bodi","Aowin","Sefwi Wiawso",
+          "Sefwi Akontombra","Bibiani-Anhwiaso-Bekwai"
         ];
       }
       populateAllDistricts();
@@ -1230,9 +1232,19 @@ function updateCharCount(textareaId, countId, max) {
 
 // ═══════════════════════════════════════════════════════════════
 // SUBMIT ENGINE — waits for GAS confirmation before showing modal
-// Disables button during submission to prevent double-submit
+// Prevents double-submit with a global in-flight lock + 5s cooldown
 // ═══════════════════════════════════════════════════════════════
+
+// Global submission lock — true while ANY request is in flight.
+// This prevents rapid resubmission even if the button gets re-enabled.
+let _submitting = false;
+
+function isSubmitLocked() {
+  return _submitting;
+}
+
 function setSubmitting(btnId, isSubmitting) {
+  _submitting = isSubmitting;
   const btn = document.getElementById(btnId);
   if (!btn) return;
   btn.disabled = isSubmitting;
@@ -1240,11 +1252,21 @@ function setSubmitting(btnId, isSubmitting) {
     btn._origHTML = btn.innerHTML;
     btn.innerHTML = '<span class="spinner">⏳</span> Submitting…';
   } else {
-    btn.innerHTML = btn._origHTML || btn.innerHTML;
+    // After re-enabling, apply a 5-second cooldown before user can submit again.
+    // This catches the case where first attempt appeared to fail but was still
+    // in flight — the cooldown gives GAS time to process and prevents duplicates.
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Please wait…';
+    setTimeout(function() {
+      _submitting = false; // release global lock after cooldown
+      btn.disabled = false;
+      btn.innerHTML = btn._origHTML || btn.innerHTML;
+    }, 5000);
   }
 }
 
 function submitFault() {
+  if (isSubmitLocked()) return; // prevent double-submit while request is in flight
   clearErrors(["f-facility","f-district","f-ftype","f-equip","f-reporter","f-contact","f-desc"]);
   let ok = true;
   ok = req("f-facility","Facility name")      && ok;
@@ -1299,6 +1321,7 @@ function resetFaultForm() {
 }
 
 function submitInstall() {
+  if (isSubmitLocked()) return; // prevent double-submit while request is in flight
   clearErrors(["i-facility","i-district","i-ftype","i-etype","i-qty","i-name","i-contact"]);
   let ok = true;
   ok = req("i-facility","Facility name")  && ok;
@@ -1342,6 +1365,7 @@ function submitInstall() {
 }
 
 function submitEquip() {
+  if (isSubmitLocked()) return; // prevent double-submit while request is in flight
   clearErrors(["e-facility","e-district","e-etype","e-qty","e-name","e-contact","e-reason"]);
   let ok = true;
   ok = req("e-facility","Facility name")   && ok;
