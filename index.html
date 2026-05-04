@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Medical Equipment Management Dashboard</title>
+<title>Medical Equipment Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -219,8 +219,8 @@ textarea{resize:vertical;min-height:100px}
   <div class="header-inner">
     <div class="header-logo">🏥</div>
     <div style="flex:1">
-      <div class="header-title">Medical Equipment Management Dashboard</div>
-      <div class="header-sub">Clinical Engineering Unit — Western Region Health Directorate, Ghana</div>
+      <div class="header-title">Western Regional Medical Equipment Dashboard</div>
+      <div class="header-sub">Clinical Engineering Unit — Region Health Directorate, Sekondi</div>
     </div>
     <div id="gas-status">⏳ Connecting…</div>
   </div>
@@ -229,7 +229,7 @@ textarea{resize:vertical;min-height:100px}
 <nav class="tab-nav">
   <div class="tab-nav-inner">
     <button class="tab-btn active" onclick="showTab('fault',this)">⚠️ Fault Reporting</button>
-    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation</button>
+    <button class="tab-btn" onclick="showTab('install',this)">🔩 Installation/Training</button>
     <button class="tab-btn" onclick="showTab('equip',this)">🏥 Equipment Request</button>
     <button class="tab-btn" onclick="showTab('admin',this)">🔐 Admin</button>
   </div>
@@ -242,8 +242,8 @@ textarea{resize:vertical;min-height:100px}
   <div class="section-header">
     <div class="section-icon icon-fault">⚠️</div>
     <div>
-      <div class="section-title">Medical Equipment Fault Reporting</div>
-      <div class="section-sub">Report equipment faults for assessment by the Clinical Engineering Unit</div>
+      <div class="section-title">Broken Medical Equipment Fault Reporting</div>
+      <div class="section-sub">Fill this form to report faulty medical equipment at your facility for assessment by the Regional Clinical Engineering Unit</div>
     </div>
   </div>
   <div class="form-card">
@@ -272,16 +272,16 @@ textarea{resize:vertical;min-height:100px}
       </div>
       <div class="field-group">
         <label class="field-label">Unit / Department</label>
-        <input type="text" id="f-unit" maxlength="100" placeholder="e.g. ICU, Theatre, Maternity Ward"/>
+        <input type="text" id="f-unit" maxlength="100" placeholder="e.g. OPD,ICU,Maternity Ward"/>
       </div>
       <div class="field-group">
         <label class="field-label">Name of Equipment <span class="req">*</span></label>
-        <input type="text" id="f-equip" maxlength="150" placeholder="e.g. Portable Ventilator, ECG Machine"/>
+        <input type="text" id="f-equip" maxlength="150" placeholder="e.g. Patient Monitor, Weighing Scale"/>
         <span class="err-msg" id="err-f-equip"></span>
       </div>
       <div class="field-group">
         <label class="field-label">Name of Person Reporting <span class="req">*</span></label>
-        <input type="text" id="f-reporter" maxlength="100" placeholder="Full name"/>
+        <input type="text" id="f-reporter" maxlength="100" placeholder="Your Full Name"/>
         <span class="err-msg" id="err-f-reporter"></span>
       </div>
       <div class="field-group">
@@ -294,7 +294,7 @@ textarea{resize:vertical;min-height:100px}
     </div>
     <div class="field-group" style="margin-bottom:1rem">
       <label class="field-label">Description of Fault <span class="req">*</span></label>
-      <textarea id="f-desc" rows="4" maxlength="2000" oninput="updateCharCount('f-desc','f-desc-count',2000)" placeholder="Describe the fault — when it started, symptoms, error messages…"></textarea>
+      <textarea id="f-desc" rows="4" maxlength="2000" oninput="updateCharCount('f-desc','f-desc-count',2000)" placeholder="Describe the problem with this equipment — what happens when you try to use it, symptoms, error messages…"></textarea>
       <div class="char-count"><span id="f-desc-count">0</span>/2000</div>
       <span class="err-msg" id="err-f-desc"></span>
     </div>
@@ -304,7 +304,7 @@ textarea{resize:vertical;min-height:100px}
     </div>
     <div class="field-group">
       <label class="field-label">Upload Picture of Equipment</label>
-      <p class="field-hint">Attach a clear photo showing the fault or equipment label</p>
+      <p class="field-hint">Attach a clear photo showing the faulty part especially</p>
       <div class="file-area">
         <label class="file-label" for="f-img">📷 Choose Image</label>
         <input type="file" id="f-img" accept="image/*" style="display:none" onchange="previewImg(this,'img-preview')"/>
@@ -365,10 +365,10 @@ textarea{resize:vertical;min-height:100px}
     <div class="section-icon icon-install">🔩</div>
     <div>
       <div class="section-title">Request for Equipment Installation</div>
-      <div class="section-sub">For newly received equipment requiring professional installation</div>
+      <div class="section-sub">For newly received equipment that needs professional installation and training for users</div>
     </div>
   </div>
-  <div class="banner banner-blue">💡 <strong>Note:</strong> This form is for newly received equipment requiring installation or commissioning by the Clinical Engineering Unit.</div>
+  <div class="banner banner-blue">💡 <strong>Note:</strong> This form is for new equipment requiring installation and user training by the Clinical Engineering Unit. Contact the Regional Equipment Manager on 0506971001</div>
   <div class="form-card">
     <div class="form-grid">
       <div class="field-group">
@@ -395,17 +395,8 @@ textarea{resize:vertical;min-height:100px}
       </div>
       <div class="field-group">
         <label class="field-label">Type of Equipment <span class="req">*</span></label>
-        <select id="i-etype">
-          <option value="">-- Select --</option>
-          <option>Diagnostic Imaging</option><option>Patient Monitoring</option>
-          <option>Laboratory Equipment</option><option>Surgical Equipment</option>
-          <option>Anaesthesia Equipment</option><option>Sterilization Equipment</option>
-          <option>Physiotherapy Equipment</option><option>Dental Equipment</option>
-          <option>Ophthalmic Equipment</option><option>Emergency Equipment</option>
-          <option>ICU Equipment</option><option>Neonatal Equipment</option>
-          <option>Dialysis Equipment</option><option>Endoscopy Equipment</option>
-          <option>Radiation Therapy</option><option>Other</option>
-        </select>
+        <input type="text" id="i-etype" maxlength="150"
+          placeholder="e.g. Autoclave, ECG Machine, Ultrasound, Ventilator"/>
         <span class="err-msg" id="err-i-etype"></span>
       </div>
       <div class="field-group">
@@ -446,10 +437,10 @@ textarea{resize:vertical;min-height:100px}
     <div class="section-icon icon-equip">🏥</div>
     <div>
       <div class="section-title">Medical Equipment Request</div>
-      <div class="section-sub">Request medical equipment your facility needs</div>
+      <div class="section-sub">Request for medical equipment your facility needs.</div>
     </div>
   </div>
-  <div class="banner banner-green">⚖️ <strong>Equity Notice:</strong> Information provided will guide equitable distribution of medical equipment across the region. Please be accurate.</div>
+  <div class="banner banner-green">⚖️ <strong>Equity Notice:</strong> Information provided will guide equitable distribution of medical equipment across the region. Please be accurate as possible.</div>
   <div class="form-card">
     <div class="form-grid">
       <div class="field-group">
@@ -464,17 +455,8 @@ textarea{resize:vertical;min-height:100px}
       </div>
       <div class="field-group">
         <label class="field-label">Type of Equipment <span class="req">*</span></label>
-        <select id="e-etype">
-          <option value="">-- Select --</option>
-          <option>Diagnostic Imaging</option><option>Patient Monitoring</option>
-          <option>Laboratory Equipment</option><option>Surgical Equipment</option>
-          <option>Anaesthesia Equipment</option><option>Sterilization Equipment</option>
-          <option>Physiotherapy Equipment</option><option>Dental Equipment</option>
-          <option>Ophthalmic Equipment</option><option>Emergency Equipment</option>
-          <option>ICU Equipment</option><option>Neonatal Equipment</option>
-          <option>Dialysis Equipment</option><option>Endoscopy Equipment</option>
-          <option>Radiation Therapy</option><option>Other</option>
-        </select>
+        <input type="text" id="e-etype" maxlength="150"
+          placeholder="e.g. Vital Signs Monitor, Oxygen Concentrator, Weighing Scale"/>
         <span class="err-msg" id="err-e-etype"></span>
       </div>
       <div class="field-group">
@@ -483,13 +465,13 @@ textarea{resize:vertical;min-height:100px}
         <span class="err-msg" id="err-e-qty"></span>
       </div>
       <div class="field-group">
-        <label class="field-label">Your Name <span class="req">*</span></label>
+        <label class="field-label">Your Full Name <span class="req">*</span></label>
         <input type="text" id="e-name" maxlength="100" placeholder="Full name"/>
         <span class="err-msg" id="err-e-name"></span>
       </div>
       <div class="field-group">
         <label class="field-label">Grade / Position</label>
-        <input type="text" id="e-grade" maxlength="100" placeholder="e.g. Facility Manager"/>
+        <input type="text" id="e-grade" maxlength="100" placeholder="e.g. Administrator"/>
       </div>
       <div class="field-group">
         <label class="field-label">Your Contact Number <span class="req">*</span></label>
@@ -501,8 +483,8 @@ textarea{resize:vertical;min-height:100px}
     </div>
     <div class="field-group" style="margin-bottom:1rem">
       <label class="field-label">Reasons for the Request <span class="req">*</span></label>
-      <p class="field-hint">Explain clinical need and how it will improve patient outcomes</p>
-      <textarea id="e-reason" rows="5" maxlength="2000" oninput="updateCharCount('e-reason','e-reason-count',2000)" placeholder="Patient volume, current gaps, clinical need…"></textarea>
+      <p class="field-hint">Explain clinical need and how it will improve healthcare services</p>
+      <textarea id="e-reason" rows="5" maxlength="2000" oninput="updateCharCount('e-reason','e-reason-count',2000)" placeholder=" How is the lack of this equipment affecting services you provide…"></textarea>
       <div class="char-count"><span id="e-reason-count">0</span>/2000</div>
       <span class="err-msg" id="err-e-reason"></span>
     </div>
@@ -640,7 +622,7 @@ const STATUS_META = {
   dispatched:       { label:"Dispatched",                    icon:"🚚", cls:"badge-dispatched" },
   obsolete:         { label:"Declared Obsolete",             icon:"⛔", cls:"badge-obsolete" }
 };
-const SESSION_MINUTES = 30; // Admin auto-logout after this many minutes of inactivity
+const SESSION_MINUTES = 15; // Admin auto-logout after this many minutes of inactivity
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
@@ -773,9 +755,7 @@ function loadDistrictsFromGAS() {
           "Sekondi-Takoradi Metro","Ahanta West","Shama","Wassa East",
           "Wassa Amenfi East","Wassa Amenfi West","Wassa Amenfi Central",
           "Amenfi East","Mpohor","Tarkwa-Nsuaem","Prestea-Huni Valley",
-          "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East",
-          "Bia East","Bia West","Bodi","Aowin","Sefwi Wiawso",
-          "Sefwi Akontombra","Bibiani-Anhwiaso-Bekwai"
+          "Effia-Kwesimintsim","Ellembelle","Jomoro","Nzema East"
         ];
       }
       populateAllDistricts();
