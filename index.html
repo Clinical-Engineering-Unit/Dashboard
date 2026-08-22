@@ -854,7 +854,46 @@ function showTab(name, btn) {
   document.getElementById("panel-" + name).classList.add("active");
   btn.classList.add("active");
   currentTab = name;
+  // Keep the URL in sync so this tab can be linked/bookmarked directly,
+  // without triggering another hashchange-driven tab switch.
+  const newHash = "#" + name;
+  if (window.location.hash !== newHash) {
+    history.replaceState(null, "", newHash);
+  }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// DEEP LINKING — open a specific tab based on the URL hash
+// Supports #fault, #install, #equip, #admin (and legacy aliases
+// like #fault-reporting) so external links / bookmarks land on
+// the right form instead of always defaulting to Fault Reporting.
+// ═══════════════════════════════════════════════════════════════
+const TAB_HASH_ALIASES = {
+  "fault": "fault", "fault-reporting": "fault", "faultreporting": "fault",
+  "install": "install", "installation": "install", "installation-request": "install", "installationrequest": "install",
+  "equip": "equip", "equipment": "equip", "equipment-request": "equip", "equipmentrequest": "equip",
+  "admin": "admin"
+};
+function openTabFromHash() {
+  try {
+    const key = window.location.hash.replace("#", "").trim().toLowerCase();
+    const tabName = TAB_HASH_ALIASES[key];
+    if (!tabName) { console.debug("[deep-link] no hash or no match:", JSON.stringify(window.location.hash)); return; }
+    const btn = document.querySelector('.tab-btn[onclick*="\'' + tabName + '\'"]');
+    if (btn) { showTab(tabName, btn); console.debug("[deep-link] opened tab:", tabName); }
+    else console.warn("[deep-link] matched tabName but no button found for:", tabName);
+  } catch (e) {
+    console.error("[deep-link] failed:", e);
+  }
+}
+// Multiple triggers so this can't be silently skipped by load-order
+// quirks, back/forward-cache restores, or an unrelated error earlier
+// in this script blocking a single init path.
+window.addEventListener("hashchange", openTabFromHash);
+window.addEventListener("DOMContentLoaded", openTabFromHash);
+window.addEventListener("load", openTabFromHash);
+window.addEventListener("pageshow", openTabFromHash); // handles bfcache restores (e.g. browser back button)
+if (document.readyState !== "loading") openTabFromHash();
 function showAdminTab(id, btn) {
   document.querySelectorAll(".atab-panel").forEach(p => p.style.display = "none");
   document.querySelectorAll(".atab-btn").forEach(b => b.classList.remove("active"));
