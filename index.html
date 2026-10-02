@@ -196,6 +196,9 @@ textarea{resize:vertical;min-height:100px}
 .badge-repair_completed,.badge-repair\ completed{background:var(--af);color:var(--accent)}
 .badge-dispatched{background:#e8daef;color:#6c3483}
 .badge-obsolete{background:var(--redbg);color:var(--red)}
+.badge-review{background:#e8f4fd;color:#1a5276}
+.badge-unavail{background:var(--redbg);color:var(--red)}
+.badge-delivered{background:var(--af);color:var(--accent)}
 
 .empty-state{text-align:center;padding:3rem;color:var(--text3);font-size:.88rem}
 .app-footer{text-align:center;padding:1.25rem 1rem;font-size:.7rem;color:var(--text3);border-top:1px solid var(--border);margin-top:1rem}
@@ -492,6 +495,48 @@ textarea{resize:vertical;min-height:100px}
       <button class="btn-primary green" id="btn-equip" onclick="submitEquip()">📤 Submit Equipment Request</button>
     </div>
   </div>
+
+  <!-- STATUS TRACKER (public — Equipment Request) -->
+  <div class="tracker-card">
+    <div class="tracker-header">
+      <div class="tracker-icon">🔍</div>
+      <div>
+        <div class="tracker-title">Track Your Equipment Request Status</div>
+        <div class="tracker-sub">Enter your reference code to check the current status of your equipment request</div>
+      </div>
+    </div>
+    <div class="tracker-input-row">
+      <input type="text" id="equip-track-ref-input" placeholder="e.g. ER-A3XK-7QPL"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')checkEquipStatus()"/>
+      <button class="btn-primary green" onclick="checkEquipStatus()" id="equip-track-btn">🔎 Check Status</button>
+    </div>
+    <div id="equip-track-result" style="display:none">
+      <div id="equip-track-loading" style="display:none" class="track-state">
+        <div class="track-spinner">⏳</div><p>Checking status…</p>
+      </div>
+      <div id="equip-track-notfound" style="display:none" class="track-state track-error">
+        <div style="font-size:2rem">❌</div>
+        <p id="equip-track-notfound-msg"><strong>Reference code not found.</strong></p>
+        <p style="font-size:.78rem;color:var(--text3);margin-top:4px">Codes look like <strong>ER-XXXX-XXXX</strong></p>
+      </div>
+      <div id="equip-track-found" style="display:none">
+        <div class="track-info-grid">
+          <div class="track-info-item"><span class="track-info-label">Reference Code</span><span class="track-info-value mono" id="etr-ref"></span></div>
+          <div class="track-info-item"><span class="track-info-label">Facility</span><span class="track-info-value" id="etr-facility"></span></div>
+          <div class="track-info-item"><span class="track-info-label">Equipment Requested</span><span class="track-info-value" id="etr-equipment"></span></div>
+          <div class="track-info-item"><span class="track-info-label">Last Updated</span><span class="track-info-value" id="etr-updated"></span></div>
+        </div>
+        <div class="status-progress-wrap">
+          <div class="status-progress-label">Request Status Progress</div>
+          <div class="status-progress-steps" id="etr-steps"></div>
+        </div>
+        <div class="current-status-wrap">
+          <span class="current-status-badge" id="etr-badge"></span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ══ TAB 4: ADMIN ══ -->
@@ -606,6 +651,24 @@ const SHEET_ID = "1kFbir8GNGqDWVSgJpy6vxZfBpUKI-3rIoFZ3ytpeyeA";
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
+
+// Equipment Request status steps — 4 options as specified
+// IMPORTANT: These labels must match the allowed[] array in
+// updateEquipStatus() in Code.gs exactly.
+const EQUIP_STATUS_STEPS = [
+  { key: "pending",             label: "Pending",                icon: "⏳" },
+  { key: "request_under_review",label: "Request Under Review",   icon: "🔍" },
+  { key: "equipment_not_available", label: "Equipment Not Available", icon: "❌" },
+  { key: "request_delivered",   label: "Request Delivered",      icon: "✅" }
+];
+
+const EQUIP_STATUS_META = {
+  pending:                  { label: "Pending",                 icon: "⏳", cls: "badge-pending" },
+  request_under_review:     { label: "Request Under Review",    icon: "🔍", cls: "badge-review" },
+  equipment_not_available:  { label: "Equipment Not Available", icon: "❌", cls: "badge-unavail" },
+  request_delivered:        { label: "Request Delivered",       icon: "✅", cls: "badge-delivered" }
+};
+
 const STATUS_STEPS = [
   { key:"received",         label:"Received",         icon:"📥" },
   { key:"pending",          label:"Pending",           icon:"⏳" },
@@ -1102,18 +1165,51 @@ function renderInstallList() {
   ).join("");
 }
 
+function normaliseEquipStatus(s) {
+  return (s || "").toLowerCase().replace(/ /g, "_");
+}
+
+function buildEquipStepperHTML(ref, currentStatus) {
+  const ci = EQUIP_STATUS_STEPS.findIndex(s => s.key === normaliseEquipStatus(currentStatus));
+  return EQUIP_STATUS_STEPS.map(function(s, i) {
+    const cls = i === ci ? "step-pill active" : i < ci ? "step-pill done" : "step-pill";
+    return '<button class="' + cls + '" onclick="updateEquipStatus(\'' + ref + '\',\'' + s.label + '\')">' +
+           '<span class="step-dot"></span>' + s.icon + ' ' + s.label + '</button>';
+  }).join("");
+}
+
+function updateEquipStatus(ref, newStatus) {
+  const idx = equipReports.findIndex(r => r.ref === ref);
+  if (idx !== -1) equipReports[idx].status = newStatus;
+  const card = document.getElementById("ecard-" + ref);
+  if (card) card.querySelector(".stepper-steps").innerHTML = buildEquipStepperHTML(ref, newStatus);
+
+  // Sync to GAS
+  gasRequest(
+    { action: "updateEquipStatus", ref: ref, status: newStatus, token: adminToken },
+    function() { /* Sheet updated */ },
+    function(err) { alert("Status update failed: " + err + "\nPlease try again."); }
+  );
+}
+
 function renderEquipList() {
   const c = document.getElementById("equip-list");
-  if (!equipReports.length) { c.innerHTML = '<div class="empty-state">📭 No equipment requests found.</div>'; return; }
+  if (!equipReports.length) {
+    c.innerHTML = '<div class="empty-state">📭 No equipment requests found.</div>'; return;
+  }
   c.innerHTML = equipReports.map(r =>
-    '<div class="report-card"><div class="report-meta">' +
+    '<div class="report-card" id="ecard-' + r.ref + '">' +
+    '<div class="report-meta">' +
     '<span class="report-ref">' + escHtml(r.ref) + '</span>' +
     '<span class="report-time">' + (r.timestamp ? new Date(r.timestamp).toLocaleString() : "") + '</span></div>' +
     '<div class="report-name">' + escHtml(r.etype) + ' — Qty: ' + escHtml(r.qty) + '</div>' +
     '<div class="report-detail">🏥 ' + escHtml(r.facility) + ' &nbsp;·&nbsp; 📍 ' + escHtml(r.district) + '</div>' +
     '<div class="report-detail" style="margin-top:4px">' + escHtml(r.reason) + '</div>' +
-    '<div class="report-contact">👤 ' + escHtml(r.name) + (r.grade ? ' (' + escHtml(r.grade) + ')' : '') + ' &nbsp;|&nbsp; 📞 ' + escHtml(r.contact) + '</div>' +
-    '<div class="report-detail" style="font-size:.74rem;color:var(--text3);margin-top:4px">Status: ' + escHtml(r.status) + '</div></div>'
+    '<div class="report-contact">👤 ' + escHtml(r.name) + (r.grade ? ' (' + escHtml(r.grade) + ')' : '') +
+    ' &nbsp;|&nbsp; 📞 ' + escHtml(r.contact) + '</div>' +
+    '<div class="status-stepper"><div class="stepper-label">Update Status</div>' +
+    '<div class="stepper-steps">' + buildEquipStepperHTML(r.ref, r.status) + '</div></div>' +
+    '</div>'
   ).join("");
 }
 
@@ -1525,6 +1621,88 @@ function checkStatus() {
       document.getElementById("track-notfound-msg").innerHTML = "<strong>" + escHtml(err) + "</strong>";
     }
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// EQUIPMENT REQUEST PUBLIC STATUS CHECKER
+// ─────────────────────────────────────────────────────────────────────
+function checkEquipStatus() {
+  const raw = document.getElementById("equip-track-ref-input").value.trim().toUpperCase();
+  if (!raw) { document.getElementById("equip-track-ref-input").focus(); return; }
+
+  // Format guard — ER-XXXX-XXXX
+  if (raw.length < 8 || raw.split("-").length < 3) {
+    document.getElementById("equip-track-result").style.display    = "block";
+    document.getElementById("equip-track-loading").style.display   = "none";
+    document.getElementById("equip-track-found").style.display     = "none";
+    document.getElementById("equip-track-notfound").style.display  = "block";
+    document.getElementById("equip-track-notfound-msg").innerHTML  =
+      "<strong>Invalid reference code format.</strong><br>" +
+      "<span style='font-size:.78rem;color:var(--text3)'>Equipment request codes look like <strong>ER-XXXX-XXXX</strong></span>";
+    return;
+  }
+
+  document.getElementById("equip-track-result").style.display    = "block";
+  document.getElementById("equip-track-loading").style.display   = "block";
+  document.getElementById("equip-track-found").style.display     = "none";
+  document.getElementById("equip-track-notfound").style.display  = "none";
+  document.getElementById("equip-track-btn").disabled            = true;
+  document.getElementById("equip-track-btn").textContent         = "⏳ Checking…";
+
+  gasRequest(
+    { action: "getStatus", ref: raw },
+    function(result) {
+      document.getElementById("equip-track-btn").disabled    = false;
+      document.getElementById("equip-track-btn").textContent = "🔎 Check Status";
+      document.getElementById("equip-track-loading").style.display = "none";
+
+      if (!result.found) {
+        document.getElementById("equip-track-notfound").style.display = "block";
+        document.getElementById("equip-track-notfound-msg").innerHTML =
+          "<strong>Reference code not found.</strong>";
+        return;
+      }
+      if (result.type !== "equipment_request") {
+        document.getElementById("equip-track-notfound").style.display = "block";
+        document.getElementById("equip-track-notfound-msg").innerHTML =
+          "<strong>This code belongs to a different form type.</strong><br>" +
+          "<span style='font-size:.78rem;color:var(--text3)'>Equipment request codes start with <strong>ER-</strong></span>";
+        return;
+      }
+      renderEquipTrackResult(result);
+    },
+    function(err) {
+      document.getElementById("equip-track-btn").disabled    = false;
+      document.getElementById("equip-track-btn").textContent = "🔎 Check Status";
+      document.getElementById("equip-track-loading").style.display  = "none";
+      document.getElementById("equip-track-notfound").style.display = "block";
+      document.getElementById("equip-track-notfound-msg").innerHTML =
+        "<strong>" + escHtml(err) + "</strong>";
+    }
+  );
+}
+
+function renderEquipTrackResult(result) {
+  document.getElementById("equip-track-found").style.display = "block";
+  document.getElementById("etr-ref").textContent       = result.ref      || "—";
+  document.getElementById("etr-facility").textContent  = result.facility  || "—";
+  document.getElementById("etr-equipment").textContent = result.equipment || result.etype || "—";
+  const upd = result.lastUpdated || result.timestamp || "";
+  document.getElementById("etr-updated").textContent   = upd ? new Date(upd).toLocaleString() : "—";
+
+  // Build progress steps
+  const currentKey = normaliseEquipStatus(result.status);
+  const ci = EQUIP_STATUS_STEPS.findIndex(s => s.key === currentKey);
+  document.getElementById("etr-steps").innerHTML = EQUIP_STATUS_STEPS.map(function(s, i) {
+    const cls = i === ci ? "sp-step sp-active" : i < ci ? "sp-step sp-done" : "sp-step";
+    return '<div class="' + cls + '"><span class="sp-dot"></span>' + s.icon + " " + s.label + "</div>";
+  }).join("");
+
+  // Status badge
+  const meta  = EQUIP_STATUS_META[currentKey] || { label: result.status || "Pending", icon: "⏳", cls: "badge-pending" };
+  const badge = document.getElementById("etr-badge");
+  badge.textContent = meta.icon + "  " + meta.label;
+  badge.className   = "current-status-badge " + meta.cls;
 }
 
 function renderTrackResult(result) {
